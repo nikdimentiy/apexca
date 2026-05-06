@@ -1956,8 +1956,13 @@ body.dark .kb-row kbd {
 }
 
 @media (max-width: 580px) {
-    .kb-help-fab { bottom: 5.5rem; left: 1rem; }
-    .kb-help-panel { bottom: 9rem; left: 0.75rem; right: 0.75rem; width: auto; max-height: 55vh; overflow-y: auto; }
+    .kb-help-fab { display: none !important; }
+    .kb-help-panel { display: none !important; bottom: 9rem; left: 0.75rem; right: 0.75rem; width: auto; max-height: 55vh; overflow-y: auto; }
+}
+
+/* Hide user-bar on all touch devices — iPhones, iPads, Android phones & tablets */
+@media (hover: none) and (pointer: coarse) {
+    .user-bar { display: none !important; }
 }
 
 /* ═══════════════════════════════════════════════════════════

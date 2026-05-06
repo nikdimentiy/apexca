@@ -31,26 +31,50 @@ themeBtn.addEventListener('click', () => {
 });
 
 // ---------- DATE, PROGRESS & COUNTDOWN ----------
+let countdownMode = 'today'; // 'today' or 'month'
+let dateMode = 'date'; // 'date' or 'yearPercent'
+
 function updateAllTimeMetrics() {
     const now = new Date();
-    document.getElementById('widgetDate').innerText =
-        now.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-    document.getElementById('widgetWeekday').innerText =
-        now.toLocaleDateString(undefined, { weekday: 'long' });
-
-    const start = new Date(now.getFullYear(), 0, 0);
-    const dayNum = Math.floor((now - start) / 86400000);
     const year = now.getFullYear();
+
+    // Update date/weekday widget
+    if (dateMode === 'date') {
+        document.getElementById('widgetDate').innerText =
+            now.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('widgetWeekday').innerText =
+            now.toLocaleDateString(undefined, { weekday: 'long' });
+    } else {
+        const start = new Date(year, 0, 0);
+        const dayNum = Math.floor((now - start) / 86400000);
+        const isLeap = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0));
+        const totalDays = isLeap ? 366 : 365;
+        const percentage = Math.round((dayNum / totalDays) * 100);
+        document.getElementById('widgetDate').innerText = `${percentage}%`;
+        document.getElementById('widgetWeekday').innerText = 'OF YEAR';
+    }
+
+    const start = new Date(year, 0, 0);
+    const dayNum = Math.floor((now - start) / 86400000);
     const total = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;
     document.getElementById('dayOfYearSpan').innerText = `${dayNum}/${total}`;
 
-    const endToday = new Date(year, now.getMonth(), now.getDate(), 23, 59, 59, 999);
-    let msLeft = Math.max(0, endToday - now);
-    const h = Math.floor(msLeft / 3600000);
-    const m = Math.floor((msLeft % 3600000) / 60000);
-    const s = Math.floor((msLeft % 60000) / 1000);
-    document.getElementById('midnightCountdown').innerText =
-        `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    // Update countdown widget
+    if (countdownMode === 'today') {
+        const endToday = new Date(year, now.getMonth(), now.getDate(), 23, 59, 59, 999);
+        let msLeft = Math.max(0, endToday - now);
+        const h = Math.floor(msLeft / 3600000);
+        const m = Math.floor((msLeft % 3600000) / 60000);
+        const s = Math.floor((msLeft % 60000) / 1000);
+        document.getElementById('midnightCountdown').innerText =
+            `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    } else {
+        const endMonth = new Date(year, now.getMonth() + 1, 0, 23, 59, 59, 999);
+        let msLeft = Math.max(0, endMonth - now);
+        const h = Math.floor(msLeft / 3600000);
+        document.getElementById('midnightCountdown').innerText =
+            `${h}h remaining`;
+    }
 
     document.getElementById('liveTimeFooter').innerText =
         now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
@@ -58,6 +82,26 @@ function updateAllTimeMetrics() {
 
 updateAllTimeMetrics();
 setInterval(updateAllTimeMetrics, 1000);
+
+// Countdown widget click handler to toggle between daily/monthly mode
+const countdownWidget = document.querySelector('[id="midnightCountdown"]')?.parentElement?.parentElement;
+if (countdownWidget) {
+    countdownWidget.classList.add('stat-widget-clickable');
+    countdownWidget.addEventListener('click', () => {
+        countdownMode = countdownMode === 'today' ? 'month' : 'today';
+        updateAllTimeMetrics();
+    });
+}
+
+// Date widget click handler to toggle between date/year percentage mode
+const dateWidget = document.querySelector('[id="widgetDate"]')?.parentElement?.parentElement;
+if (dateWidget) {
+    dateWidget.classList.add('stat-widget-clickable');
+    dateWidget.addEventListener('click', () => {
+        dateMode = dateMode === 'date' ? 'yearPercent' : 'date';
+        updateAllTimeMetrics();
+    });
+}
 
 // ---------- MODULE REGISTRY ----------
 const MODULES = [
