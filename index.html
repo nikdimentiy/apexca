@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Command Portal | Chroma Nexus</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="auth.css">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+</head>
+<body>
+
+    <div class="geometric-bg">
+        <div class="geo-shape shape-1"></div>
+        <div class="geo-shape shape-2"></div>
+        <div class="geo-shape shape-3"></div>
+        <div class="geo-shape shape-4"></div>
+        <div class="geo-shape shape-5"></div>
+    </div>
+
+    <div id="app-content" style="display:none">
+
+    <div class="portal-core">
+
+        <div class="glass-header">
+            <h1 class="title-glow">⌘ Command Portal</h1>
+        </div>
+
+        <div class="commands-row">
+            <button id="themeToggleBtn" class="cmd-icon-btn theme-is-light" title="Switch to dark mode">
+                <i id="themeIconMode" class="fa-solid fa-sun"></i>
+            </button>
+            <button id="wipeAllBtn" class="cmd-icon-btn wipe-action" title="Reset visited marks">
+                <i id="wipeTrashIcon" class="fa-solid fa-broom"></i>
+            </button>
+            <button id="topLinksBtn" class="cmd-icon-btn top-links-action" title="Top Links  [H]">
+                <i class="fa-solid fa-chart-simple"></i>
+            </button>
+
+        </div>
+
+        <div class="stats-panel">
+            <div class="stat-widget">
+                <div class="stat-icon"><i class="fa-regular fa-calendar-check"></i></div>
+                <div class="stat-content">
+                    <div id="widgetDate" class="stat-number">—</div>
+                    <div id="widgetWeekday" class="stat-label">DAY</div>
+                </div>
+            </div>
+            <div class="stat-widget stat-widget-clickable" id="yearStatWidget" title="Show month calendar">
+                <div class="stat-icon"><i class="fa-regular fa-leaf"></i></div>
+                <div class="stat-content">
+                    <div id="dayOfYearSpan" class="stat-number">0/365</div>
+                    <div class="stat-label">YEAR PROGRESS</div>
+                </div>
+            </div>
+            <div class="stat-widget">
+                <div class="stat-icon"><i class="fa-regular fa-hourglass-half"></i></div>
+                <div class="stat-content">
+                    <div id="midnightCountdown" class="stat-number mono-digit">00:00:00</div>
+                    <div class="stat-label">REMAINING TODAY</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="app-grid-centered">
+
+            <!-- FocusTrack — red gradient, alternating-corner shape -->
+            <a href="https://focustrack.info/" target="_blank" rel="noopener noreferrer"
+               class="portal-card" id="mod-focus"
+               style="--accent-color: var(--accent-focus);" data-gradient="red">
+                <span class="card-key-badge">1</span>
+                <div class="visited-check"><i class="fas fa-check"></i></div>
+                <div class="card-icon-circle"><i class="fa-solid fa-crosshairs"></i></div>
+                <div class="card-name">FocusTrack</div>
+                <div class="card-description">Deep work analytics &amp; spaced repetition core</div>
+            </a>
+
+            <!-- Cali Hustler — orange gradient, diagonal organic shape -->
+            <a href="https://calihustler.com/" target="_blank" rel="noopener noreferrer"
+               class="portal-card" id="mod-hustler"
+               style="--accent-color: var(--accent-hustler);" data-gradient="orange">
+                <span class="card-key-badge">2</span>
+                <div class="visited-check"><i class="fas fa-check"></i></div>
+                <div class="card-icon-circle"><i class="fa-solid fa-fire"></i></div>
+                <div class="card-name">Cali Hustler</div>
+                <div class="card-description">Daily missions &amp; habit discipline engine</div>
+            </a>
+
+            <!-- Nexus Hub — violet gradient, circuit cut shape -->
+            <a href="http://nexushub.site/" target="_blank" rel="noopener noreferrer"
+               class="portal-card" id="mod-nexus"
+               style="--accent-color: var(--accent-nexus);" data-gradient="violet">
+                <span class="card-key-badge">3</span>
+                <div class="visited-check"><i class="fas fa-check"></i></div>
+                <div class="card-icon-circle"><i class="fa-solid fa-microchip"></i></div>
+                <div class="card-name">Nexus Hub</div>
+                <div class="card-description">Life OS &amp; strategic execution dashboard</div>
+            </a>
+
+            <!-- Sportage HQ — grey gradient, shield dome shape -->
+            <a href="http://sportagehq.site/" target="_blank" rel="noopener noreferrer"
+               class="portal-card" id="mod-sportage"
+               style="--accent-color: var(--accent-sportage);" data-gradient="grey">
+                <span class="card-key-badge">4</span>
+                <div class="visited-check"><i class="fas fa-check"></i></div>
+                <div class="card-icon-circle"><i class="fa-solid fa-gauge-high"></i></div>
+                <div class="card-name">Sportage HQ</div>
+                <div class="card-description">Vehicle telemetry &amp; efficiency tracker</div>
+            </a>
+
+            <!-- Titan Crew — green gradient, power asymmetry shape -->
+            <a href="https://titancrew.online/" target="_blank" rel="noopener noreferrer"
+               class="portal-card" id="mod-titan"
+               style="--accent-color: var(--accent-titan);" data-gradient="green">
+                <span class="card-key-badge">5</span>
+                <div class="visited-check"><i class="fas fa-check"></i></div>
+                <div class="card-icon-circle"><i class="fa-solid fa-dumbbell"></i></div>
+                <div class="card-name">Titan Crew</div>
+                <div class="card-description">Strength, cardio &amp; body composition suite</div>
+            </a>
+
+        </div>
+
+        <div class="footer-gloss">
+            <div class="sys-status">
+                <div class="pulse-led"></div>
+                <span>⚡ all systems nominal</span>
+            </div>
+            <form class="td-quick-add" id="tdQuickAddForm" autocomplete="off">
+                <i class="fa-solid fa-inbox td-qa-icon"></i>
+                <input
+                    type="text"
+                    id="tdQuickAddInput"
+                    class="td-qa-input"
+                    placeholder="quick add to inbox…"
+                    maxlength="500"
+                >
+                <button type="submit" class="td-qa-btn" title="Add to Todoist Inbox">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </form>
+            <div class="live-time">
+                <i class="fa-regular fa-clock"></i>
+                <span id="liveTimeFooter">--:--:-- --</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Todoist Today FAB -->
+    <button id="tdToggleBtn" class="td-toggle-fab" title="Today's Tasks  [T]">
+        <i class="fa-solid fa-check-double"></i>
+        <span class="td-fab-label">T</span>
+        <span class="td-count-badge" id="tdCountBadge" hidden>0</span>
+    </button>
+
+    <!-- Todoist Today Panel -->
+    <div class="td-panel td-hidden" id="todoistPanel">
+        <div class="td-header">
+            <i class="fa-solid fa-check-double"></i>
+            <span class="td-header-title">Today</span>
+            <span class="td-progress" id="tdProgress"></span>
+            <button class="td-refresh-btn" id="tdRefreshBtn" title="Refresh">
+                <i class="fa-solid fa-arrows-rotate"></i>
+            </button>
+            <button class="td-close-btn" id="tdCloseBtn" title="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="td-body" id="tdBody">
+            <div class="td-state td-loading" id="tdLoading" hidden>
+                <div class="td-sk-task">
+                    <div class="td-sk-circle"></div>
+                    <div class="td-sk-lines">
+                        <div class="td-sk-line" style="width:80%"></div>
+                        <div class="td-sk-line td-sk-sub" style="width:44%;animation-delay:.18s"></div>
+                    </div>
+                </div>
+                <div class="td-sk-task">
+                    <div class="td-sk-circle" style="animation-delay:.09s"></div>
+                    <div class="td-sk-lines">
+                        <div class="td-sk-line" style="width:91%;animation-delay:.09s"></div>
+                        <div class="td-sk-line td-sk-sub" style="width:36%;animation-delay:.27s"></div>
+                    </div>
+                </div>
+                <div class="td-sk-task">
+                    <div class="td-sk-circle" style="animation-delay:.18s"></div>
+                    <div class="td-sk-lines">
+                        <div class="td-sk-line" style="width:65%;animation-delay:.18s"></div>
+                    </div>
+                </div>
+                <div class="td-sk-task">
+                    <div class="td-sk-circle" style="animation-delay:.27s"></div>
+                    <div class="td-sk-lines">
+                        <div class="td-sk-line" style="width:75%;animation-delay:.27s"></div>
+                        <div class="td-sk-line td-sk-sub" style="width:52%;animation-delay:.45s"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="td-task-list" id="tdTaskList"></div>
+            <div class="td-state td-error-msg" id="tdError" hidden></div>
+        </div>
+    </div>
+
+    <!-- Rankings toggle FAB -->
+    <button id="lbToggleBtn" class="lb-toggle-fab" title="View Rankings  [R]">
+        <i class="fa-solid fa-trophy"></i>
+        <span class="lb-fab-label">R</span>
+    </button>
+
+    <!-- Quick Links toggle FAB -->
+    <button id="qlToggleBtn" class="ql-toggle-fab" title="Quick Links  [Q]">
+        <i class="fa-solid fa-bolt"></i>
+        <span class="ql-fab-label">Q</span>
+    </button>
+
+    <div class="leaderboard-panel lb-hidden" id="leaderboardPanel">
+        <div class="lb-header">
+            <i class="fa-solid fa-trophy"></i>
+            <span>View Rankings</span>
+            <button class="lb-close-btn" id="lbCloseBtn" title="Hide Rankings">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+        </div>
+        <table class="leaderboard-table">
+            <thead>
+                <tr>
+                    <th class="th-rank">Rank</th>
+                    <th class="th-widget">Widget</th>
+                    <th class="th-views">Views</th>
+                    <th class="th-share">Share</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboardBody"></tbody>
+        </table>
+    </div>
+
+    <div class="ql-panel ql-hidden" id="quickLinksPanel">
+        <div class="ql-header">
+            <i class="fa-solid fa-bolt"></i>
+            <span>Quick Links</span>
+            <button class="ql-close-btn" id="qlCloseBtn" title="Hide Quick Links">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="ql-grid" id="quickLinksGrid">
+            <!-- Widgets will be injected here -->
+        </div>
+    </div>
+
+    <!-- Top Links panel — centered overlay, top-5 by visit frequency -->
+    <div class="top-links-panel tl-hidden" id="topLinksPanel">
+        <div class="tl-header">
+            <i class="fa-solid fa-chart-simple"></i>
+            <span>Top Links</span>
+            <button class="tl-close-btn" id="tlCloseBtn" title="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="tl-grid" id="topLinksGrid">
+            <!-- Top-5 widgets injected by JS -->
+        </div>
+    </div>
+
+    <!-- Month Calendar Popup -->
+    <div class="month-cal-panel month-cal-hidden" id="monthCalPanel">
+        <div class="month-cal-header">
+            <span id="monthCalTitle"></span>
+            <button class="month-cal-close" id="monthCalClose" title="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="mc-dow-row">
+            <div class="mc-dow-cell mc-dow-sun">Su</div>
+            <div class="mc-dow-cell">Mo</div>
+            <div class="mc-dow-cell">Tu</div>
+            <div class="mc-dow-cell">We</div>
+            <div class="mc-dow-cell">Th</div>
+            <div class="mc-dow-cell">Fr</div>
+            <div class="mc-dow-cell">Sa</div>
+        </div>
+        <div class="month-cal-grid" id="monthCalGrid"></div>
+        <div class="month-cal-footer" id="monthCalFooter"></div>
+    </div>
+
+    <!-- Keyboard Shortcuts FAB -->
+    <button id="kbHelpBtn" class="kb-help-fab" title="Keyboard Shortcuts  [/]">
+        <i class="fa-solid fa-keyboard"></i>
+    </button>
+
+    <!-- Keyboard Shortcuts Panel -->
+    <div class="kb-help-panel kb-hidden" id="kbHelpPanel">
+        <div class="kb-header">
+            <i class="fa-solid fa-keyboard"></i>
+            <span>Shortcuts</span>
+            <button class="kb-close-btn" id="kbCloseBtn" title="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="kb-body">
+            <div class="kb-section-label">Panels</div>
+            <div class="kb-row"><kbd>T</kbd><span>Todoist Tasks</span></div>
+            <div class="kb-row"><kbd>R</kbd><span>Rankings</span></div>
+            <div class="kb-row"><kbd>Q</kbd><span>Quick Links</span></div>
+            <div class="kb-row"><kbd>H</kbd><span>Top Links</span></div>
+            <div class="kb-row"><kbd>/</kbd><span>This panel</span></div>
+            <div class="kb-section-label">Todoist</div>
+            <div class="kb-row"><span class="kb-keys"><kbd>Ctrl</kbd><kbd>/</kbd></span><span>Quick add to inbox</span></div>
+            <div class="kb-section-label">Launch</div>
+            <div class="kb-row"><kbd>1</kbd><span>FocusTrack</span></div>
+            <div class="kb-row"><kbd>2</kbd><span>Cali Hustler</span></div>
+            <div class="kb-row"><kbd>3</kbd><span>Nexus Hub</span></div>
+            <div class="kb-row"><kbd>4</kbd><span>Sportage HQ</span></div>
+            <div class="kb-row"><kbd>5</kbd><span>Titan Crew</span></div>
+        </div>
+    </div>
+
+    </div><!-- /#app-content -->
+
+    <!-- ── AUTH OVERLAY — Terminal Hexgate ── -->
+    <div id="auth-overlay" class="auth-overlay" role="dialog" aria-modal="true" aria-label="Authentication">
+
+      <!-- Geometric background shapes -->
+      <div class="auth-geo-bg" aria-hidden="true">
+        <div class="ag-shape ag-tri-1"></div>
+        <div class="ag-shape ag-tri-2"></div>
+        <div class="ag-shape ag-tri-3"></div>
+        <div class="ag-shape ag-hex-1"></div>
+        <div class="ag-shape ag-dia-1"></div>
+        <div class="ag-shape ag-dia-2"></div>
+        <div class="ag-shape ag-dia-3"></div>
+      </div>
+
+      <div class="auth-gate">
+
+        <!-- LEFT: Branding panel -->
+        <div class="auth-brand">
+          <div class="brand-glyph">⌬</div>
+          <h1>Command Portal</h1>
+          <p>Secure Access Gateway</p>
+          <div class="brand-divider"></div>
+        </div>
+
+        <!-- RIGHT: Form panel -->
+        <div class="auth-form-panel">
+          <button class="auth-close" aria-label="Close">&times;</button>
+
+          <!-- Login form -->
+          <form id="login-form" class="auth-form active" novalidate>
+            <div class="terminal-input">
+              <span class="term-prefix">user://</span>
+              <input type="email"    id="login-email"    placeholder="email address" autocomplete="email">
+            </div>
+            <div class="terminal-input">
+              <span class="term-prefix">pass://</span>
+              <input type="password" id="login-password" placeholder="password"      autocomplete="current-password">
+            </div>
+            <button type="submit" class="auth-submit">
+              <span class="submit-text">Authenticate</span>
+              <div class="submit-loader" hidden></div>
+            </button>
+            <div id="login-msg" class="auth-msg"></div>
+          </form>
+
+          <div class="scanline"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- USER STATUS BAR (shown when logged in) -->
+    <div id="user-bar" class="user-bar hidden">
+      <div class="user-dot"></div>
+      <span id="user-display-name" class="user-name">user</span>
+      <button id="logout-btn" class="user-logout">logout</button>
+    </div>
+
+    <!-- Supabase JS v2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+    <script src="app.js"></script>
+    <script src="supabase-auth.js"></script>
+    <script src="todoist.js"></script>
+</body>
+</html>
