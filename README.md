@@ -230,10 +230,4 @@ Requires ES2020+ support (async/await, modern CSS Grid/Flex, Backdrop Filter).
 - [ ] Workout logging from Titan Crew
 - [ ] Vehicle log sync from Sportage HQ
 
-## 📄 License
-
-MIT
-
----
-
 **Built with ⚡ and precision for relentless execution**
