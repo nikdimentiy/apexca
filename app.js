@@ -68,12 +68,14 @@ function updateAllTimeMetrics() {
         const s = Math.floor((msLeft % 60000) / 1000);
         document.getElementById('midnightCountdown').innerText =
             `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        document.getElementById('countdownLabel').innerText = 'REMAINING TODAY';
     } else {
         const endMonth = new Date(year, now.getMonth() + 1, 0, 23, 59, 59, 999);
         let msLeft = Math.max(0, endMonth - now);
         const h = Math.floor(msLeft / 3600000);
         document.getElementById('midnightCountdown').innerText =
             `${h}h remaining`;
+        document.getElementById('countdownLabel').innerText = 'REMAINING THIS MONTH';
     }
 
     document.getElementById('liveTimeFooter').innerText =
@@ -84,9 +86,8 @@ updateAllTimeMetrics();
 setInterval(updateAllTimeMetrics, 1000);
 
 // Countdown widget click handler to toggle between daily/monthly mode
-const countdownWidget = document.querySelector('[id="midnightCountdown"]')?.parentElement?.parentElement;
+const countdownWidget = document.getElementById('countdownStatWidget');
 if (countdownWidget) {
-    countdownWidget.classList.add('stat-widget-clickable');
     countdownWidget.addEventListener('click', () => {
         countdownMode = countdownMode === 'today' ? 'month' : 'today';
         updateAllTimeMetrics();
