@@ -75,11 +75,15 @@ Deno.serve(async (req: Request) => {
       const todayStr = new Date().toISOString().slice(0, 10)
 
       const tasks = (items as any[])
-        .filter(t =>
-          !t.checked &&
-          !t.is_deleted &&
-          t.due?.date?.slice(0, 10) <= todayStr
-        )
+        .filter(t => {
+          const dueDate = t.due?.date?.slice(0, 10)
+          return (
+            !t.checked &&
+            !t.is_deleted &&
+            dueDate &&
+            dueDate <= todayStr
+          )
+        })
         .map(({ id, content, priority, due, labels }) => ({
           id: String(id),
           content,
