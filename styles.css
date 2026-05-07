@@ -1768,6 +1768,136 @@ body.dark .td-quick-add:focus-within {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   LEADERBOARD PERIOD BADGE
+═══════════════════════════════════════════════════════════ */
+.lb-period-badge {
+    font-size: 0.52rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(245, 197, 66, 0.85);
+    background: rgba(245, 197, 66, 0.12);
+    border: 1px solid rgba(245, 197, 66, 0.25);
+    border-radius: 99px;
+    padding: 1px 6px;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+body.dark .lb-period-badge {
+    color: rgba(245, 197, 66, 0.75);
+    background: rgba(245, 197, 66, 0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   WORK HOURS REMAINING WIDGET
+═══════════════════════════════════════════════════════════ */
+.work-hours-widget {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 4.75rem;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.75rem 0.45rem 0.6rem;
+    background: rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(32px) saturate(2);
+    -webkit-backdrop-filter: blur(32px) saturate(2);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 20px;
+    box-shadow:
+        0 4px 18px rgba(0, 0, 0, 0.07),
+        inset 0 1px 0 rgba(255, 255, 255, 0.42);
+    user-select: none;
+    transition: transform 0.22s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s;
+    cursor: default;
+}
+body.dark .work-hours-widget {
+    background: rgba(10, 18, 34, 0.58);
+    border-color: rgba(255, 255, 255, 0.09);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.work-hours-widget:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255,255,255,0.45);
+}
+body.dark .work-hours-widget:hover {
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.wh-icon {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+body.dark .wh-icon {
+    color: rgba(180, 200, 230, 0.7);
+}
+
+.wh-body {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 76px;
+}
+
+.wh-vals {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+    letter-spacing: 0.01em;
+    display: flex;
+    align-items: baseline;
+    gap: 1px;
+}
+
+.wh-unit {
+    font-size: 0.58rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-left: 1px;
+}
+
+.wh-sep {
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    margin: 0 3px;
+}
+
+.wh-bar-track {
+    height: 3px;
+    background: rgba(128, 128, 128, 0.18);
+    border-radius: 99px;
+    overflow: hidden;
+}
+body.dark .wh-bar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.wh-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, rgba(74, 222, 128, .85), rgba(34, 197, 94, .95));
+    transition: width 1s linear, background 1s linear;
+}
+
+.wh-caption {
+    font-size: 0.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    opacity: 0.75;
+    line-height: 1;
+}
+
+@media (max-width: 580px) {
+    .work-hours-widget { display: none !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════
    KEYBOARD SHORTCUTS HELP
 ═══════════════════════════════════════════════════════════ */
 

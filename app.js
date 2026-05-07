@@ -164,9 +164,68 @@ function loadViewCounts() {
     } catch(e) { viewCounts = {}; }
 }
 
+// ---------- DAILY VIEW COUNTS (Quick Links — resets each day) ----------
+const DAILY_VIEW_KEY = 'portal_daily_view_counts';
+let dailyViewCounts = {};
+
+function getTodayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function loadDailyViewCounts() {
+    try {
+        const raw = localStorage.getItem(DAILY_VIEW_KEY);
+        const data = raw ? JSON.parse(raw) : null;
+        if (data && data.date === getTodayStr()) {
+            dailyViewCounts = data.counts || {};
+        } else {
+            dailyViewCounts = {};
+            localStorage.setItem(DAILY_VIEW_KEY, JSON.stringify({ date: getTodayStr(), counts: {} }));
+        }
+    } catch(e) { dailyViewCounts = {}; }
+}
+
+function saveDailyViewCounts() {
+    localStorage.setItem(DAILY_VIEW_KEY, JSON.stringify({ date: getTodayStr(), counts: dailyViewCounts }));
+}
+
+// ---------- MONTHLY VIEW COUNTS (Rankings — resets each month) ----------
+const MONTHLY_VIEW_KEY = 'portal_monthly_view_counts';
+let monthlyViewCounts = {};
+
+function getMonthStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+
+function loadMonthlyViewCounts() {
+    try {
+        const raw = localStorage.getItem(MONTHLY_VIEW_KEY);
+        const data = raw ? JSON.parse(raw) : null;
+        if (data && data.month === getMonthStr()) {
+            monthlyViewCounts = data.counts || {};
+        } else {
+            monthlyViewCounts = {};
+            localStorage.setItem(MONTHLY_VIEW_KEY, JSON.stringify({ month: getMonthStr(), counts: {} }));
+        }
+    } catch(e) { monthlyViewCounts = {}; }
+}
+
+function saveMonthlyViewCounts() {
+    localStorage.setItem(MONTHLY_VIEW_KEY, JSON.stringify({ month: getMonthStr(), counts: monthlyViewCounts }));
+}
+
 function incrementView(id) {
     viewCounts[id] = (viewCounts[id] || 0) + 1;
     localStorage.setItem(VIEW_KEY, JSON.stringify(viewCounts));
+
+    dailyViewCounts[id] = (dailyViewCounts[id] || 0) + 1;
+    saveDailyViewCounts();
+
+    monthlyViewCounts[id] = (monthlyViewCounts[id] || 0) + 1;
+    saveMonthlyViewCounts();
+
     renderLeaderboard();
     renderQuickLinks();
     if (tlVisible) renderTopLinksPanel();
@@ -178,9 +237,9 @@ const MEDALS = ['🥇', '🥈', '🥉'];
 function renderLeaderboard() {
     const body = document.getElementById('leaderboardBody');
     if (!body) return;
-    const total = MODULES.reduce((sum, m) => sum + (viewCounts[m.id] || 0), 0);
+    const total = MODULES.reduce((sum, m) => sum + (monthlyViewCounts[m.id] || 0), 0);
     const sorted = MODULES
-        .map(m => ({ ...m, views: viewCounts[m.id] || 0 }))
+        .map(m => ({ ...m, views: monthlyViewCounts[m.id] || 0 }))
         .sort((a, b) => b.views - a.views || a.name.localeCompare(b.name));
 
     body.innerHTML = sorted.map((m, i) => {
@@ -222,15 +281,15 @@ function renderQuickLinks() {
     if (!grid) return;
 
     const sorted = [...QUICK_LINKS]
-        .map(ql => ({ ...ql, views: viewCounts[ql.id] || 0 }))
-        .sort((a, b) => b.views - a.views || a.name.localeCompare(b.name));
+        .map(ql => ({ ...ql, views: dailyViewCounts[ql.id] || 0, totalViews: viewCounts[ql.id] || 0 }))
+        .sort((a, b) => b.views - a.views || b.totalViews - a.totalViews || a.name.localeCompare(b.name));
 
     grid.innerHTML = sorted.map(ql => `
         <a href="${ql.url}" target="_blank" rel="noopener noreferrer"
            class="ql-widget" data-id="${ql.id}" style="--ql-accent: var(${ql.accent})">
             <div class="ql-icon">${renderQlIcon(ql)}</div>
             <div class="ql-name">${ql.name}</div>
-            <div class="ql-views-count">${ql.views} visits</div>
+            <div class="ql-views-count">${ql.views} today</div>
         </a>
     `).join('');
 
@@ -261,6 +320,10 @@ wipeBtn.addEventListener('click', () => {
     localStorage.removeItem(VIEW_KEY);
     visitedModules = [];
     viewCounts = {};
+    dailyViewCounts = {};
+    monthlyViewCounts = {};
+    localStorage.setItem(DAILY_VIEW_KEY, JSON.stringify({ date: getTodayStr(), counts: {} }));
+    localStorage.setItem(MONTHLY_VIEW_KEY, JSON.stringify({ month: getMonthStr(), counts: {} }));
     moduleIds.forEach(id => document.getElementById(id)?.classList.remove('visited'));
     renderLeaderboard();
     renderQuickLinks();
@@ -294,8 +357,8 @@ function renderTopLinksPanel() {
     if (!grid) return;
 
     const top5 = [...QUICK_LINKS]
-        .map(ql => ({ ...ql, views: viewCounts[ql.id] || 0 }))
-        .sort((a, b) => b.views - a.views || a.name.localeCompare(b.name))
+        .map(ql => ({ ...ql, views: dailyViewCounts[ql.id] || 0, totalViews: viewCounts[ql.id] || 0 }))
+        .sort((a, b) => b.views - a.views || b.totalViews - a.totalViews || a.name.localeCompare(b.name))
         .slice(0, 5);
 
     grid.innerHTML = top5.map((ql, i) => `
@@ -304,7 +367,7 @@ function renderTopLinksPanel() {
             <span class="tl-rank-badge">${TL_MEDALS[i]}</span>
             <div class="tl-icon"><i class="${ql.icon}"></i></div>
             <div class="tl-name">${ql.name}</div>
-            <div class="tl-views">${ql.views} visits</div>
+            <div class="tl-views">${ql.views} today</div>
         </a>
     `).join('');
 
@@ -472,12 +535,62 @@ function setKbVisible(show) {
 kbHelpBtn.addEventListener('click', () => setKbVisible(!kbVisible));
 kbCloseBtn.addEventListener('click', () => setKbVisible(false));
 
+// ---------- REMAINING WORK HOURS WIDGET ----------
+function calcRemainingWorkHours() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const today = now.getDate();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    let totalWorkDays = 0;
+    let remainingMs = 0;
+    const msPerDay = 86400000;
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dow = new Date(year, month, d).getDay();
+        if (dow === 0 || dow === 6) continue;
+        totalWorkDays++;
+        if (d > today) {
+            remainingMs += 8 * 3600000;
+        } else if (d === today) {
+            const startOfDay = new Date(year, month, d).getTime();
+            const fractionRemaining = Math.max(0, (startOfDay + msPerDay - now.getTime()) / msPerDay);
+            remainingMs += 8 * 3600000 * fractionRemaining;
+        }
+    }
+    return { remaining: Math.round(remainingMs / 3600000), total: totalWorkDays * 8 };
+}
+
+function updateWorkHoursWidget() {
+    const wh = calcRemainingWorkHours();
+    const remEl   = document.getElementById('workHoursRemaining');
+    const totalEl = document.getElementById('workHoursTotal');
+    const barEl   = document.getElementById('workHoursBar');
+    if (!remEl) return;
+    remEl.textContent   = wh.remaining;
+    totalEl.textContent = wh.total;
+    if (barEl) {
+        const elapsed = wh.total > 0 ? (wh.total - wh.remaining) / wh.total : 0;
+        barEl.style.width = Math.round(elapsed * 100) + '%';
+        const rem = 1 - elapsed;
+        barEl.style.background = rem > 0.5
+            ? 'linear-gradient(90deg,rgba(74,222,128,.85),rgba(34,197,94,.95))'
+            : rem > 0.25
+                ? 'linear-gradient(90deg,rgba(251,191,36,.85),rgba(245,158,11,.95))'
+                : 'linear-gradient(90deg,rgba(248,113,113,.85),rgba(239,68,68,.95))';
+    }
+}
+
 // ---------- INIT ----------
 loadVisitedState();
 loadViewCounts();
+loadDailyViewCounts();
+loadMonthlyViewCounts();
 renderLeaderboard();
 renderQuickLinks();
 renderTopLinksPanel();
+updateWorkHoursWidget();
+setInterval(updateWorkHoursWidget, 60000);
 
 window.addEventListener('storage', (e) => {
     if (e.key === 'portal_visited_launchpad') loadVisitedState();

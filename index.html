@@ -229,7 +229,7 @@
     <div class="leaderboard-panel lb-hidden" id="leaderboardPanel">
         <div class="lb-header">
             <i class="fa-solid fa-trophy"></i>
-            <span>View Rankings</span>
+            <span>Rankings <span class="lb-period-badge">this month</span></span>
             <button class="lb-close-btn" id="lbCloseBtn" title="Hide Rankings">
                 <i class="fa-solid fa-chevron-left"></i>
             </button>
@@ -299,6 +299,22 @@
     <button id="kbHelpBtn" class="kb-help-fab" title="Keyboard Shortcuts  [/]">
         <i class="fa-solid fa-keyboard"></i>
     </button>
+
+    <!-- Working Hours Remaining Widget -->
+    <div class="work-hours-widget" id="workHoursWidget" title="Remaining working hours this month (Mon–Fri · 8h/day)">
+        <i class="fa-solid fa-business-time wh-icon"></i>
+        <div class="wh-body">
+            <div class="wh-vals">
+                <span id="workHoursRemaining">—</span><span class="wh-unit">h</span>
+                <span class="wh-sep">/</span>
+                <span id="workHoursTotal">—</span><span class="wh-unit">h</span>
+            </div>
+            <div class="wh-bar-track">
+                <div class="wh-bar-fill" id="workHoursBar"></div>
+            </div>
+            <div class="wh-caption">work hrs left · month</div>
+        </div>
+    </div>
 
     <!-- Keyboard Shortcuts Panel -->
     <div class="kb-help-panel kb-hidden" id="kbHelpPanel">
