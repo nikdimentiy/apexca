@@ -536,6 +536,65 @@ function setKbVisible(show) {
 kbHelpBtn.addEventListener('click', () => setKbVisible(!kbVisible));
 kbCloseBtn.addEventListener('click', () => setKbVisible(false));
 
+// ---------- FOCUS HOURS WIDGET (9–12 AM + 1–2 PM, Mon–Fri) ----------
+function calcFocusHours() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const today = now.getDate();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const FOCUS_START  = 9;   // 9 AM
+    const LUNCH_START  = 12;  // 12 PM
+    const LUNCH_END    = 13;  // 1 PM
+    const FOCUS_END    = 14;  // 2 PM
+    const DAILY_NET    = 4;   // net focus hours per day (9-12 + 1-2)
+    let totalWorkDays = 0;
+    let remainingHours = 0;
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dow = new Date(year, month, d).getDay();
+        if (dow === 0 || dow === 6) continue;
+        totalWorkDays++;
+        if (d > today) {
+            remainingHours += DAILY_NET;
+        } else if (d === today) {
+            const h = now.getHours() + now.getMinutes() / 60;
+            let todayLeft = 0;
+            if (h < FOCUS_START) {
+                todayLeft = DAILY_NET;
+            } else if (h < LUNCH_START) {
+                todayLeft = (LUNCH_START - h) + (FOCUS_END - LUNCH_END);
+            } else if (h < LUNCH_END) {
+                todayLeft = FOCUS_END - LUNCH_END;
+            } else if (h < FOCUS_END) {
+                todayLeft = FOCUS_END - h;
+            }
+            remainingHours += Math.max(0, todayLeft);
+        }
+    }
+    return { remaining: Math.round(remainingHours), total: totalWorkDays * DAILY_NET };
+}
+
+function updateFocusHoursWidget() {
+    const fh = calcFocusHours();
+    const remEl   = document.getElementById('focusHoursRemaining');
+    const totalEl = document.getElementById('focusHoursTotal');
+    const barEl   = document.getElementById('focusHoursBar');
+    if (!remEl) return;
+    remEl.textContent   = fh.remaining;
+    totalEl.textContent = fh.total;
+    if (barEl) {
+        const elapsed = fh.total > 0 ? (fh.total - fh.remaining) / fh.total : 0;
+        barEl.style.width = Math.round(elapsed * 100) + '%';
+        const rem = 1 - elapsed;
+        barEl.style.background = rem > 0.5
+            ? 'linear-gradient(90deg,rgba(99,179,237,.85),rgba(59,130,246,.95))'
+            : rem > 0.25
+                ? 'linear-gradient(90deg,rgba(167,139,250,.85),rgba(139,92,246,.95))'
+                : 'linear-gradient(90deg,rgba(248,113,113,.85),rgba(239,68,68,.95))';
+    }
+}
+
 // ---------- REMAINING WORK HOURS WIDGET ----------
 function calcRemainingWorkHours() {
     const now = new Date();
@@ -543,23 +602,23 @@ function calcRemainingWorkHours() {
     const month = now.getMonth();
     const today = now.getDate();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const WORK_START = 9;   // 9 AM
+    const WORK_END   = 17;  // 5 PM
     let totalWorkDays = 0;
-    let remainingMs = 0;
-    const msPerDay = 86400000;
+    let remainingHours = 0;
 
     for (let d = 1; d <= daysInMonth; d++) {
         const dow = new Date(year, month, d).getDay();
         if (dow === 0 || dow === 6) continue;
         totalWorkDays++;
         if (d > today) {
-            remainingMs += 8 * 3600000;
+            remainingHours += 8;
         } else if (d === today) {
-            const startOfDay = new Date(year, month, d).getTime();
-            const fractionRemaining = Math.max(0, (startOfDay + msPerDay - now.getTime()) / msPerDay);
-            remainingMs += 8 * 3600000 * fractionRemaining;
+            const currentHour = now.getHours() + now.getMinutes() / 60;
+            remainingHours += Math.max(0, Math.min(WORK_END - Math.max(currentHour, WORK_START), 8));
         }
     }
-    return { remaining: Math.round(remainingMs / 3600000), total: totalWorkDays * 8 };
+    return { remaining: Math.round(remainingHours), total: totalWorkDays * 8 };
 }
 
 function updateWorkHoursWidget() {
@@ -590,8 +649,9 @@ loadMonthlyViewCounts();
 renderLeaderboard();
 renderQuickLinks();
 renderTopLinksPanel();
+updateFocusHoursWidget();
 updateWorkHoursWidget();
-setInterval(updateWorkHoursWidget, 60000);
+setInterval(() => { updateFocusHoursWidget(); updateWorkHoursWidget(); }, 60000);
 
 window.addEventListener('storage', (e) => {
     if (e.key === 'portal_visited_launchpad') loadVisitedState();

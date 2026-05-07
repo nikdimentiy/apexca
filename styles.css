@@ -1789,6 +1789,113 @@ body.dark .lb-period-badge {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   FOCUS HOURS WIDGET (9–12 AM + 1–2 PM, Mon–Fri)
+═══════════════════════════════════════════════════════════ */
+.focus-hours-widget {
+    position: fixed;
+    bottom: 5.25rem;
+    left: 4.75rem;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.75rem 0.45rem 0.6rem;
+    background: rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(32px) saturate(2);
+    -webkit-backdrop-filter: blur(32px) saturate(2);
+    border: 1px solid rgba(99, 179, 237, 0.22);
+    border-radius: 20px;
+    box-shadow:
+        0 4px 18px rgba(59, 130, 246, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.42);
+    user-select: none;
+    transition: transform 0.22s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s;
+    cursor: default;
+}
+body.dark .focus-hours-widget {
+    background: rgba(10, 18, 40, 0.6);
+    border-color: rgba(99, 179, 237, 0.18);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.focus-hours-widget:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 28px rgba(59, 130, 246, 0.14), inset 0 1px 0 rgba(255,255,255,0.45);
+}
+body.dark .focus-hours-widget:hover {
+    box-shadow: 0 8px 28px rgba(59, 130, 246, 0.18), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.fh-icon {
+    font-size: 0.9rem;
+    color: rgba(99, 179, 237, 0.85);
+    flex-shrink: 0;
+}
+body.dark .fh-icon {
+    color: rgba(99, 179, 237, 0.7);
+}
+
+.fh-body {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 76px;
+}
+
+.fh-vals {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+    letter-spacing: 0.01em;
+    display: flex;
+    align-items: baseline;
+    gap: 1px;
+}
+
+.fh-unit {
+    font-size: 0.58rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-left: 1px;
+}
+
+.fh-sep {
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    margin: 0 3px;
+}
+
+.fh-bar-track {
+    height: 3px;
+    background: rgba(99, 179, 237, 0.15);
+    border-radius: 99px;
+    overflow: hidden;
+}
+body.dark .fh-bar-track {
+    background: rgba(99, 179, 237, 0.1);
+}
+
+.fh-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, rgba(99,179,237,.85), rgba(59,130,246,.95));
+    transition: width 1s linear, background 1s linear;
+}
+
+.fh-caption {
+    font-size: 0.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(99, 179, 237, 0.7);
+    line-height: 1;
+}
+
+@media (max-width: 580px) {
+    .focus-hours-widget { display: none !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════
    WORK HOURS REMAINING WIDGET
 ═══════════════════════════════════════════════════════════ */
 .work-hours-widget {
