@@ -77,10 +77,12 @@ Deno.serve(async (req: Request) => {
       const tasks = (items as any[])
         .filter(t => {
           const dueDate = t.due?.date?.slice(0, 10)
+          // Validate date format (YYYY-MM-DD) and only show tasks due today or earlier
+          const isValidDate = dueDate && /^\d{4}-\d{2}-\d{2}$/.test(dueDate)
           return (
             !t.checked &&
             !t.is_deleted &&
-            dueDate &&
+            isValidDate &&
             dueDate <= todayStr
           )
         })
