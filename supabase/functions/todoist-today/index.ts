@@ -56,7 +56,7 @@ Deno.serve(async (req: Request) => {
     console.log('[todoist-today] token present:', !!todoistToken, 'length:', todoistToken?.length)
     if (!todoistToken) return json({ error: 'TODOIST_TOKEN not configured' }, 500)
 
-    const { action, task_id, content } = await req.json()
+    const { action, task_id, content, client_today } = await req.json()
     console.log('[todoist-today] action:', action)
 
     if (action === 'fetch') {
@@ -72,7 +72,11 @@ Deno.serve(async (req: Request) => {
       }
 
       const { items = [] } = await res.json()
-      const todayStr = new Date().toISOString().slice(0, 10)
+      // Todoist due.date is in the user's local timezone — trust the
+      // client-supplied local date, not the server's UTC date.
+      const todayStr = (typeof client_today === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(client_today))
+        ? client_today
+        : new Date().toISOString().slice(0, 10)
 
       const tasks = (items as any[])
         .filter(t => {

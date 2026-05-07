@@ -41,9 +41,21 @@ async function tdRequest(body) {
 }
 
 // ── Due-date helpers ─────────────────────────────────────────
+// Today in the user's local timezone (YYYY-MM-DD). Todoist stores
+// due.date in the user's local timezone, so comparisons must too —
+// a UTC-based "today" silently wraps for users west of UTC after
+// the server day has rolled over.
+function localTodayStr() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
 function formatDue(due) {
     if (!due?.date) return null;
-    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayStr = localTodayStr();
     const dueDateStr = due.date.slice(0, 10);
     if (dueDateStr < todayStr) return { text: 'Overdue', overdue: true };
     // Sync API encodes time directly in due.date as a full ISO string (length > 10)
@@ -168,7 +180,7 @@ async function loadTodayTasks() {
     if (tdTasks.length === 0) tdLoading.hidden = false;
 
     try {
-        const { tasks } = await tdRequest({ action: 'fetch' });
+        const { tasks } = await tdRequest({ action: 'fetch', client_today: localTodayStr() });
         tdTasks = tasks ?? [];
         tdCompleted.clear();
         renderTasks();
