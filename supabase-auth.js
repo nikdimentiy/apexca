@@ -96,6 +96,15 @@ async function initAuth() {
 }
 
 // ── USER BAR ─────────────────────────────────────────────────
+let userBarIdleTimer;
+function resetUserBarIdle() {
+  userBar?.classList.remove('idle');
+  clearTimeout(userBarIdleTimer);
+  userBarIdleTimer = setTimeout(() => {
+    userBar?.classList.add('idle');
+  }, 4000);
+}
+
 function showUserBar(user) {
   const name = user.user_metadata?.username || user.email?.split('@')[0] || 'user';
   if (userNameEl) userNameEl.textContent = name;
@@ -103,12 +112,39 @@ function showUserBar(user) {
   
   document.getElementById('app-content').style.display = '';
   window.onPortalSyncReady?.();
+
+  // Start idle timer
+  resetUserBarIdle();
+  window.addEventListener('mousemove', resetUserBarIdle);
+  window.addEventListener('keydown', resetUserBarIdle);
 }
 
+// ── AVATAR DROPDOWN ───────────────────────────────────────────
+const userAvatarBtn = document.getElementById('user-avatar-btn');
+const userDropdown  = document.getElementById('user-dropdown');
+
+function closeDropdown() {
+  if (userDropdown) userDropdown.hidden = true;
+  userAvatarBtn?.classList.remove('active');
+}
+
+userAvatarBtn?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const isOpen = !userDropdown.hidden;
+  if (isOpen) { closeDropdown(); } else {
+    userDropdown.hidden = false;
+    userAvatarBtn.classList.add('active');
+  }
+});
+
+document.addEventListener('click', closeDropdown);
+
 document.getElementById('logout-btn')?.addEventListener('click', async () => {
+  closeDropdown();
   await _supa.auth.signOut();
   userBar?.classList.add('hidden');
-  
+  window.removeEventListener('mousemove', resetUserBarIdle);
+  window.removeEventListener('keydown', resetUserBarIdle);
 });
 
 // ── CLOUD DATA API ────────────────────────────────────────────

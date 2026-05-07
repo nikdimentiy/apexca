@@ -333,9 +333,36 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    cursor: pointer;
+    cursor: grab;
+    user-select: none;
     overflow: hidden;
+    -webkit-touch-callout: none; /* Disable context menu on long press */
+    -webkit-user-select: none;
+    touch-action: manipulation; /* Prepare for touch but allow scrolling */
 }
+
+.portal-card:active {
+    cursor: grabbing;
+}
+
+/* SortableJS Classes */
+.sortable-ghost {
+    opacity: 0.2;
+    background: var(--accent-color) !important;
+    border: 1px dashed var(--accent-color);
+}
+
+.sortable-chosen {
+    transform: scale(1.05);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    z-index: 100;
+}
+
+.sortable-drag {
+    opacity: 1 !important;
+}
+
+
 
 /* TOP ACCENT LINE */
 .portal-card::before {
@@ -364,7 +391,7 @@ body {
 
 /* ─── UNIQUE CARD SHAPES ─── */
 
-/* FocusTrack — alternating sharp/round: target / reticle feel */
+/* Focus Track — alternating sharp/round: target / reticle feel */
 #mod-focus {
     border-radius: 8px 52px 8px 52px;
 }
@@ -391,7 +418,7 @@ body {
 
 /* ─── CARD GRADIENTS — LIGHT MODE ─── */
 
-/* FocusTrack: red / crimson */
+/* Focus Track: red / crimson */
 .portal-card[data-gradient="red"] {
     background: linear-gradient(140deg, rgba(200, 30, 50, 0.22), rgba(160, 20, 40, 0.07), var(--glass-bg));
 }
@@ -857,8 +884,9 @@ body.dark .lb-icon { background: rgba(255, 255, 255, 0.06); border-color: rgba(2
 /* QUICK LINKS FAB */
 .ql-toggle-fab {
     position: fixed;
-    top: 5.5rem;
+    top: 50%;
     left: 1rem;
+    transform: translateY(-50%);
     z-index: 20;
     width: 46px;
     height: 46px;
@@ -885,7 +913,7 @@ body.dark .ql-toggle-fab {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
 }
 .ql-toggle-fab:hover {
-    transform: scale(1.08);
+    transform: translateY(-50%) scale(1.08);
     box-shadow: 0 6px 28px rgba(74, 222, 128, 0.25), 0 2px 6px rgba(0,0,0,0.1);
     background: rgba(255, 255, 255, 0.26);
 }
@@ -1044,10 +1072,185 @@ body.dark .ql-panel {
     font-weight: 500;
 }
 
-@media (max-width: 580px) {
-    .ql-toggle-fab { top: auto; bottom: 1rem; left: 4.5rem; }
-    .ql-panel { top: auto; bottom: 4.75rem; left: 0.5rem; right: 0.5rem; width: auto; max-width: 100%; border-radius: 16px; transform-origin: bottom center; }
+/* ───────────────────────────────────────────────
+   COMMAND PALETTE (Ctrl+K)
+─────────────────────────────────────────────── */
+.cp-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 15vh;
+    transition: all 0.25s ease;
 }
+
+.cp-hidden {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.cp-container {
+    width: 600px;
+    max-width: calc(100vw - 2rem);
+    background: rgba(20, 25, 40, 0.85);
+    backdrop-filter: blur(25px) saturate(1.8);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    overflow: hidden;
+    animation: cpPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes cpPop {
+    from { opacity: 0; transform: scale(0.95) translateY(-20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.cp-search-row {
+    display: flex;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 1rem;
+}
+
+.cp-search-icon {
+    font-size: 1.2rem;
+    color: var(--accent-nexus);
+    opacity: 0.8;
+}
+
+.cp-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.1rem;
+    font-family: inherit;
+    outline: none;
+}
+
+.cp-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.cp-esc-badge {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    font-weight: 700;
+}
+
+.cp-results {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+.cp-item {
+    display: flex;
+    align-items: center;
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    gap: 1rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    user-select: none;
+}
+
+.cp-item:hover, .cp-item.selected {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.cp-item.selected {
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.cp-item-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    font-size: 1rem;
+    color: var(--accent-nexus);
+}
+
+.cp-item-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.cp-item-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.cp-item-desc {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.cp-item-type {
+    font-size: 0.7rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 500;
+}
+
+.cp-footer {
+    display: flex;
+    padding: 0.85rem 1.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 1.5rem;
+}
+
+.cp-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.cp-hint kbd {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.6);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.7rem;
+}
+
+/* Scrollbar for results */
+.cp-results::-webkit-scrollbar {
+    width: 6px;
+}
+.cp-results::-webkit-scrollbar-track {
+    background: transparent;
+}
+.cp-results::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+.cp-results::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
 
 /* ───────────────────────────────────────────────
    TOP LINKS BUTTON
@@ -1789,7 +1992,7 @@ body.dark .lb-period-badge {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   FOCUS HOURS WIDGET (9–12 AM + 1–2 PM, Mon–Fri)
+   FOCUS HOURS WIDGET (9–12 AM + 1–3 PM, Mon–Fri)
 ═══════════════════════════════════════════════════════════ */
 .focus-hours-widget {
     position: fixed;
@@ -2304,8 +2507,10 @@ button,
         left:   calc(1rem + env(safe-area-inset-left,  0px));
     }
     .ql-toggle-fab {
+        top: auto;
         bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
         left:   calc(4.5rem + env(safe-area-inset-left, 0px));
+        transform: none;
     }
     .kb-help-fab {
         bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
@@ -2360,6 +2565,13 @@ button,
 }
 
 /* ── iPad (portrait / landscape) ─────────────────────────── */
+@media (max-width: 1024px) {
+    .focus-hours-widget,
+    .work-hours-widget {
+        display: none !important;
+    }
+}
+
 @media (min-width: 581px) and (max-width: 1024px) {
     .portal-card { width: 240px; }
     .td-panel { width: 310px; }

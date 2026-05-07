@@ -221,6 +221,11 @@ tdToggleBtn.addEventListener('click', () => setTdVisible(!tdVisible));
 tdCloseBtn.addEventListener('click',  () => setTdVisible(false));
 tdRefreshBtn.addEventListener('click', loadTodayTasks);
 
+// Esc inside any input within the panel closes the panel
+document.getElementById('tdQuickAddInput')?.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { e.preventDefault(); setTdVisible(false); }
+});
+
 // Keyboard shortcut: T
 document.addEventListener('keydown', e => {
     if (e.target.closest('input, textarea, select')) return;

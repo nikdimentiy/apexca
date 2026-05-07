@@ -1,6 +1,6 @@
 # ⌘ Command Portal
 
-A sleek, glass-morphism dashboard that unifies your life OS ecosystem — seamlessly connecting FocusTrack, Cali Hustler, Nexus Hub, Sportage HQ, and Titan Crew with real-time Todoist integration.
+A sleek, glass-morphism dashboard that unifies your life OS ecosystem — seamlessly connecting Focus Track, Cali Hustler, Nexus Hub, Sportage HQ, and Titan Crew with real-time Todoist integration.
 
 ## ✨ Features
 
@@ -164,7 +164,7 @@ All requests require valid Supabase session token (auto-injected by the client l
 Edit CSS variables in `styles.css`:
 ```css
 :root {
-    --accent-focus: #db4035;     /* FocusTrack red */
+    --accent-focus: #db4035;     /* Focus Track red */
     --accent-hustler: #ff9933;   /* Cali orange */
     --accent-nexus: #7c3aed;     /* Nexus violet */
     /* ... more in file */

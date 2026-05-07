@@ -106,7 +106,7 @@ if (dateWidget) {
 
 // ---------- MODULE REGISTRY ----------
 const MODULES = [
-    { id: 'mod-focus',    name: 'FocusTrack',   icon: 'fa-solid fa-crosshairs', accent: '--accent-focus' },
+    { id: 'mod-focus',    name: 'Focus Track',   icon: 'fa-solid fa-crosshairs', accent: '--accent-focus' },
     { id: 'mod-hustler',  name: 'Cali Hustler',  icon: 'fa-solid fa-fire',       accent: '--accent-hustler' },
     { id: 'mod-nexus',    name: 'Nexus Hub',     icon: 'fa-solid fa-microchip',  accent: '--accent-nexus' },
     { id: 'mod-sportage', name: 'Sportage',   icon: 'fa-solid fa-gauge-high', accent: '--accent-sportage' },
@@ -407,19 +407,266 @@ let qlVisible = localStorage.getItem('portal_ql_visible') === 'true';
 function setQlVisible(show) {
     qlVisible = show;
     qlPanel.classList.toggle('ql-hidden', !show);
-    qlToggleBtn.classList.toggle('ql-fab-active', show);
     localStorage.setItem('portal_ql_visible', String(show));
     if (show) renderQuickLinks();
 }
 
 setQlVisible(qlVisible);
-qlToggleBtn.addEventListener('click', () => {
-    setQlVisible(!qlVisible);
-    if (qlVisible && lbVisible) setLbVisible(false);
-});
 qlCloseBtn.addEventListener('click',  () => setQlVisible(false));
 
+// ---------- DRAG AND DROP REORDERING ----------
+const gridContainer = document.querySelector('.app-grid-centered');
+const MODULE_ORDER_KEY = 'portal_module_order';
+
+function updateModuleBadges() {
+    const cards = [...gridContainer.querySelectorAll('.portal-card')];
+    cards.forEach((card, index) => {
+        const badge = card.querySelector('.card-key-badge');
+        if (badge) badge.textContent = index + 1;
+    });
+}
+
+function getPositionalShortcutMap() {
+    const cards = [...gridContainer.querySelectorAll('.portal-card')];
+    const map = {};
+    cards.forEach((card, index) => {
+        map[String(index + 1)] = card.id;
+    });
+    return map;
+}
+
+function saveModuleOrder() {
+    const cards = [...gridContainer.querySelectorAll('.portal-card')];
+    const order = cards.map(c => c.id);
+    localStorage.setItem(MODULE_ORDER_KEY, JSON.stringify(order));
+    window.savePortalData?.(MODULE_ORDER_KEY, order);
+}
+
+function loadModuleOrder() {
+    const raw = localStorage.getItem(MODULE_ORDER_KEY);
+    if (!raw) return;
+    try {
+        const order = JSON.parse(raw);
+        if (!Array.isArray(order)) return;
+        order.forEach(id => {
+            const card = document.getElementById(id);
+            if (card) gridContainer.appendChild(card);
+        });
+        updateModuleBadges();
+    } catch (e) { console.error('Order load fail', e); }
+}
+
+function initDragAndDrop() {
+    if (typeof Sortable === 'undefined') return;
+
+    new Sortable(gridContainer, {
+        animation: 350,
+        ghostClass: 'sortable-ghost',
+        chosenClass: 'sortable-chosen',
+        dragClass: 'sortable-drag',
+        onEnd: () => {
+            updateModuleBadges();
+            saveModuleOrder();
+        },
+        // Enable touch delay for mobile to distinguish from scroll
+        delay: 150,
+        delayOnTouchOnly: true,
+        touchStartThreshold: 5
+    });
+}
+
+function getDragAfterElement(container, x, y) {
+    const draggableElements = [...container.querySelectorAll('.portal-card:not(.dragging)')];
+
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        // Since it's a grid, we consider both X and Y
+        const centerX = box.left + box.width / 2;
+        const centerY = box.top + box.height / 2;
+        const offset = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+
+        if (offset < closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.POSITIVE_INFINITY }).element;
+}
+
+// Initial call to load order
+loadModuleOrder();
+initDragAndDrop();
+
+// ---------- COMMAND PALETTE (Ctrl+K) ----------
+const cpOverlay = document.getElementById('cmdPalette');
+const cpInput   = document.getElementById('cpInput');
+const cpResults = document.getElementById('cpResults');
+let cpVisible = false;
+let cpSelectedIndex = 0;
+let cpFilteredItems = [];
+
+const COMMANDS = [
+    { id: 'cmd-theme', name: 'Toggle Theme', desc: 'Switch between light and dark mode', icon: 'fa-solid fa-circle-half-stroke', type: 'Action', action: () => themeBtn.click() },
+    { id: 'cmd-todo',  name: 'Add Todoist Task', desc: 'Type "todo: content" to add directly', icon: 'fa-solid fa-plus', type: 'Action', action: (val) => {
+        const content = val.replace(/^todo:/i, '').trim();
+        if (content) {
+            const tdInput = document.getElementById('tdQuickAddInput');
+            const tdForm = document.getElementById('tdQuickAddForm');
+            if (tdInput && tdForm) {
+                tdInput.value = content;
+                tdForm.dispatchEvent(new Event('submit'));
+            }
+        } else {
+            cpInput.value = 'todo: ';
+            renderCPResults();
+        }
+    }},
+    { id: 'cmd-wipe',  name: 'Reset Statistics', desc: 'Clear visit rankings and history', icon: 'fa-solid fa-broom', type: 'Danger', action: () => wipeBtn.click() },
+    { id: 'cmd-kb',    name: 'Keyboard Shortcuts', desc: 'Show all available shortcuts', icon: 'fa-solid fa-keyboard', type: 'Action', action: () => setKbVisible(true) },
+    { id: 'cmd-rank',  name: 'View Rankings', desc: 'Show module visit statistics', icon: 'fa-solid fa-trophy', type: 'Panel', action: () => setLbVisible(true) },
+];
+
+function getAllCPItems() {
+    const items = [...COMMANDS];
+    
+    // Add Modules
+    MODULES.forEach(m => {
+        items.push({
+            id: m.id,
+            name: m.name,
+            desc: `Launch ${m.name} module`,
+            icon: m.icon,
+            type: 'Module',
+            action: () => {
+                const card = document.getElementById(m.id);
+                if (card) card.click();
+            }
+        });
+    });
+
+    // Add Quick Links
+    QUICK_LINKS.forEach(ql => {
+        items.push({
+            id: ql.id,
+            name: ql.name,
+            desc: `Open ${ql.name} (${ql.url})`,
+            icon: ql.icon,
+            type: 'Link',
+            action: () => {
+                window.open(ql.url, '_blank', 'noopener,noreferrer');
+                incrementView(ql.id);
+            }
+        });
+    });
+
+    return items;
+}
+
+function renderCPResults() {
+    const val = cpInput.value.toLowerCase().trim();
+    const all = getAllCPItems();
+    
+    if (val.startsWith('todo:')) {
+        cpFilteredItems = [COMMANDS.find(c => c.id === 'cmd-todo')];
+    } else {
+        cpFilteredItems = all.filter(item => 
+            item.name.toLowerCase().includes(val) || 
+            item.desc.toLowerCase().includes(val) ||
+            item.type.toLowerCase().includes(val)
+        );
+    }
+
+    if (cpFilteredItems.length === 0) {
+        cpResults.innerHTML = `<div class="td-empty" style="padding:2rem">No results found for "${val}"</div>`;
+        return;
+    }
+
+    cpSelectedIndex = Math.min(cpSelectedIndex, cpFilteredItems.length - 1);
+    if (cpSelectedIndex < 0) cpSelectedIndex = 0;
+
+    cpResults.innerHTML = cpFilteredItems.map((item, i) => `
+        <div class="cp-item ${i === cpSelectedIndex ? 'selected' : ''}" data-index="${i}">
+            <div class="cp-item-icon">
+                ${item.id === 'ql-google' ? GOOGLE_G_SVG : `<i class="${item.icon}"></i>`}
+            </div>
+            <div class="cp-item-content">
+                <span class="cp-item-name">${item.name}</span>
+                <span class="cp-item-desc">${item.desc}</span>
+            </div>
+            <span class="cp-item-type">${item.type}</span>
+        </div>
+    `).join('');
+
+    const selected = cpResults.querySelector('.selected');
+    if (selected) selected.scrollIntoView({ block: 'nearest' });
+}
+
+function setCPVisible(show) {
+    cpVisible = show;
+    cpOverlay.classList.toggle('cp-hidden', !show);
+    if (show) {
+        cpInput.value = '';
+        cpSelectedIndex = 0;
+        renderCPResults();
+        setTimeout(() => cpInput.focus(), 50);
+    }
+}
+
+cpInput.addEventListener('input', () => {
+    cpSelectedIndex = 0;
+    renderCPResults();
+});
+
+cpInput.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        cpSelectedIndex = (cpSelectedIndex + 1) % cpFilteredItems.length;
+        renderCPResults();
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        cpSelectedIndex = (cpSelectedIndex - 1 + cpFilteredItems.length) % cpFilteredItems.length;
+        renderCPResults();
+    } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const item = cpFilteredItems[cpSelectedIndex];
+        if (item) {
+            item.action(cpInput.value);
+            setCPVisible(false);
+        }
+    } else if (e.key === 'Escape') {
+        setCPVisible(false);
+    }
+});
+
+cpOverlay.addEventListener('click', (e) => {
+    if (e.target === cpOverlay) setCPVisible(false);
+});
+
+cpResults.addEventListener('click', (e) => {
+    const itemEl = e.target.closest('.cp-item');
+    if (itemEl) {
+        const index = parseInt(itemEl.dataset.index);
+        const item = cpFilteredItems[index];
+        if (item) {
+            item.action(cpInput.value);
+            setCPVisible(false);
+        }
+    }
+});
+
+document.addEventListener('keydown', e => {
+    const isMac = /Mac|iPhone|iPod|iPad/.test(navigator.platform);
+    // Shortcut: Alt+K for Windows/Linux, Cmd+J for macOS
+    const isTrigger = isMac ? (e.metaKey && e.key.toLowerCase() === 'j') : (e.altKey && e.key.toLowerCase() === 'k');
+
+    if (isTrigger) {
+        e.preventDefault();
+        setCPVisible(!cpVisible);
+    }
+});
+
 // ---------- KEYBOARD SHORTCUTS ----------
+
 const KEY_MODULE_MAP = { '1': 'mod-focus', '2': 'mod-hustler', '3': 'mod-nexus', '4': 'mod-sportage', '5': 'mod-titan' };
 
 // Ctrl+/ — focus / blur the quick-add inbox field
@@ -437,7 +684,10 @@ document.addEventListener('keydown', e => {
     if (e.target.closest('input, textarea, select')) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
 
-    const modId = KEY_MODULE_MAP[e.key];
+    // Use positional mapping if order has changed, otherwise fallback to default
+    const currentMap = getPositionalShortcutMap();
+    const modId = currentMap[e.key] || KEY_MODULE_MAP[e.key];
+    
     if (modId) {
         const card = document.getElementById(modId);
         if (card) {
@@ -452,6 +702,7 @@ document.addEventListener('keydown', e => {
     if (e.key.toLowerCase() === 'h') setTlVisible(!tlVisible);
     if (e.key === '/') setKbVisible(!kbVisible);
 });
+
 
 // ---------- MONTH CALENDAR POPUP ----------
 const yearStatWidget = document.getElementById('yearStatWidget');
@@ -537,24 +788,43 @@ kbHelpBtn.addEventListener('click', () => setKbVisible(!kbVisible));
 kbCloseBtn.addEventListener('click', () => setKbVisible(false));
 
 // ---------- FOCUS HOURS WIDGET (9–12 AM + 1–2 PM, Mon–Fri) ----------
-function calcFocusHours() {
+function calcFocusHours(weekOnly = false) {
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth();
     const today = now.getDate();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    // Determine the range of days to check
+    let startDay, endDay;
+    if (weekOnly) {
+        // Current week (Sunday=0 to Saturday=6)
+        const currentDow = now.getDay();
+        const firstDayOfWeek = today - currentDow; // Sunday
+        startDay = firstDayOfWeek;
+        endDay = firstDayOfWeek + 6; // Saturday
+    } else {
+        startDay = 1;
+        endDay = new Date(year, month + 1, 0).getDate();
+    }
+
     const FOCUS_START  = 9;   // 9 AM
     const LUNCH_START  = 12;  // 12 PM
     const LUNCH_END    = 13;  // 1 PM
-    const FOCUS_END    = 14;  // 2 PM
-    const DAILY_NET    = 4;   // net focus hours per day (9-12 + 1-2)
+    const FOCUS_END    = 15;  // 3 PM
+    const DAILY_NET    = 5;   // net focus hours per day (9-12 + 1-3)
     let totalWorkDays = 0;
     let remainingHours = 0;
 
-    for (let d = 1; d <= daysInMonth; d++) {
-        const dow = new Date(year, month, d).getDay();
+    for (let d = startDay; d <= endDay; d++) {
+        const dateObj = new Date(year, month, d);
+        // Ensure we are within the same month if not weekOnly
+        if (!weekOnly && dateObj.getMonth() !== month) continue;
+        
+        const dow = dateObj.getDay();
         if (dow === 0 || dow === 6) continue;
         totalWorkDays++;
+        
+        // If it's a future day (either in this month or in this week's window)
         if (d > today) {
             remainingHours += DAILY_NET;
         } else if (d === today) {
@@ -576,13 +846,21 @@ function calcFocusHours() {
 }
 
 function updateFocusHoursWidget() {
-    const fh = calcFocusHours();
     const remEl   = document.getElementById('focusHoursRemaining');
     const totalEl = document.getElementById('focusHoursTotal');
     const barEl   = document.getElementById('focusHoursBar');
+    const captionEl = document.querySelector('.focus-hours-widget .fh-caption');
     if (!remEl) return;
-    remEl.textContent   = fh.remaining;
+    
+    const isWeek = remEl.dataset.view === 'week';
+    const fh = calcFocusHours(isWeek);
+    
+    remEl.textContent = fh.remaining;
     totalEl.textContent = fh.total;
+    if (captionEl) {
+        captionEl.textContent = isWeek ? 'focus hrs left · week' : 'focus hrs left · month';
+    }
+
     if (barEl) {
         const elapsed = fh.total > 0 ? (fh.total - fh.remaining) / fh.total : 0;
         barEl.style.width = Math.round(elapsed * 100) + '%';
@@ -596,24 +874,40 @@ function updateFocusHoursWidget() {
 }
 
 // ---------- REMAINING WORK HOURS WIDGET ----------
-function calcRemainingWorkHours() {
+function calcRemainingWorkHours(weekOnly = false) {
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth();
     const today = now.getDate();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    let startDay, endDay;
+    if (weekOnly) {
+        const currentDow = now.getDay();
+        const firstDayOfWeek = today - currentDow;
+        startDay = firstDayOfWeek;
+        endDay = firstDayOfWeek + 6;
+    } else {
+        startDay = 1;
+        endDay = new Date(year, month + 1, 0).getDate();
+    }
+
     const WORK_START = 9;   // 9 AM
     const WORK_END   = 17;  // 5 PM
     let totalWorkDays = 0;
     let remainingHours = 0;
 
-    for (let d = 1; d <= daysInMonth; d++) {
-        const dow = new Date(year, month, d).getDay();
+    for (let d = startDay; d <= endDay; d++) {
+        const dateObj = new Date(year, month, d);
+        if (!weekOnly && dateObj.getMonth() !== month) continue;
+
+        const dow = dateObj.getDay();
         if (dow === 0 || dow === 6) continue;
         totalWorkDays++;
-        if (d > today) {
+
+        const checkDate = dateObj.getDate();
+        if (checkDate > today || (weekOnly && d > today)) {
             remainingHours += 8;
-        } else if (d === today) {
+        } else if (checkDate === today) {
             const currentHour = now.getHours() + now.getMinutes() / 60;
             remainingHours += Math.max(0, Math.min(WORK_END - Math.max(currentHour, WORK_START), 8));
         }
@@ -622,13 +916,21 @@ function calcRemainingWorkHours() {
 }
 
 function updateWorkHoursWidget() {
-    const wh = calcRemainingWorkHours();
     const remEl   = document.getElementById('workHoursRemaining');
     const totalEl = document.getElementById('workHoursTotal');
     const barEl   = document.getElementById('workHoursBar');
+    const captionEl = document.querySelector('.work-hours-widget .wh-caption');
     if (!remEl) return;
-    remEl.textContent   = wh.remaining;
+
+    const isWeek = remEl.dataset.view === 'week';
+    const wh = calcRemainingWorkHours(isWeek);
+
+    remEl.textContent = wh.remaining;
     totalEl.textContent = wh.total;
+    if (captionEl) {
+        captionEl.textContent = isWeek ? 'work hrs left · week' : 'work hrs left · month';
+    }
+
     if (barEl) {
         const elapsed = wh.total > 0 ? (wh.total - wh.remaining) / wh.total : 0;
         barEl.style.width = Math.round(elapsed * 100) + '%';
@@ -641,6 +943,21 @@ function updateWorkHoursWidget() {
     }
 }
 
+// Click to toggle remaining view (Month vs Week) in the widget
+document.getElementById('focusHoursWidget')?.addEventListener('click', () => {
+    const remEl = document.getElementById('focusHoursRemaining');
+    if (!remEl) return;
+    remEl.dataset.view = (remEl.dataset.view === 'week') ? 'month' : 'week';
+    updateFocusHoursWidget();
+});
+
+document.getElementById('workHoursWidget')?.addEventListener('click', () => {
+    const remEl = document.getElementById('workHoursRemaining');
+    if (!remEl) return;
+    remEl.dataset.view = (remEl.dataset.view === 'week') ? 'month' : 'week';
+    updateWorkHoursWidget();
+});
+
 // ---------- INIT ----------
 loadVisitedState();
 loadViewCounts();
@@ -651,6 +968,14 @@ renderQuickLinks();
 renderTopLinksPanel();
 updateFocusHoursWidget();
 updateWorkHoursWidget();
+
+// Update CP shortcut label in help panel based on platform
+const isMac = /Mac|iPhone|iPod|iPad/.test(navigator.platform);
+const cpKeyLabel = document.getElementById('cpKeyPlatform');
+const cpLetterLabel = document.getElementById('cpLetterPlatform');
+if (cpKeyLabel) cpKeyLabel.textContent = isMac ? '⌘' : 'Alt';
+if (cpLetterLabel) cpLetterLabel.textContent = isMac ? 'J' : 'K';
+
 setInterval(() => { updateFocusHoursWidget(); updateWorkHoursWidget(); }, 60000);
 
 window.addEventListener('storage', (e) => {

@@ -76,20 +76,20 @@
 
         <div class="app-grid-centered">
 
-            <!-- FocusTrack — red gradient, alternating-corner shape -->
+            <!-- Focus Track — red gradient, alternating-corner shape -->
             <a href="https://focustrack.info/" target="_blank" rel="noopener noreferrer"
-               class="portal-card" id="mod-focus"
+               class="portal-card" id="mod-focus" draggable="true"
                style="--accent-color: var(--accent-focus);" data-gradient="red">
                 <span class="card-key-badge">1</span>
                 <div class="visited-check"><i class="fas fa-check"></i></div>
                 <div class="card-icon-circle"><i class="fa-solid fa-crosshairs"></i></div>
-                <div class="card-name">FocusTrack</div>
+                <div class="card-name">Focus Track</div>
                 <div class="card-description">Deep work analytics &amp; spaced repetition core</div>
             </a>
 
             <!-- Cali Hustler — orange gradient, diagonal organic shape -->
             <a href="https://calihustler.com/" target="_blank" rel="noopener noreferrer"
-               class="portal-card" id="mod-hustler"
+               class="portal-card" id="mod-hustler" draggable="true"
                style="--accent-color: var(--accent-hustler);" data-gradient="orange">
                 <span class="card-key-badge">2</span>
                 <div class="visited-check"><i class="fas fa-check"></i></div>
@@ -100,7 +100,7 @@
 
             <!-- Nexus Hub — violet gradient, circuit cut shape -->
             <a href="http://nexushub.site/" target="_blank" rel="noopener noreferrer"
-               class="portal-card" id="mod-nexus"
+               class="portal-card" id="mod-nexus" draggable="true"
                style="--accent-color: var(--accent-nexus);" data-gradient="violet">
                 <span class="card-key-badge">3</span>
                 <div class="visited-check"><i class="fas fa-check"></i></div>
@@ -111,7 +111,7 @@
 
             <!-- Sportage HQ — grey gradient, shield dome shape -->
             <a href="http://sportagehq.site/" target="_blank" rel="noopener noreferrer"
-               class="portal-card" id="mod-sportage"
+               class="portal-card" id="mod-sportage" draggable="true"
                style="--accent-color: var(--accent-sportage);" data-gradient="grey">
                 <span class="card-key-badge">4</span>
                 <div class="visited-check"><i class="fas fa-check"></i></div>
@@ -122,7 +122,7 @@
 
             <!-- Titan Crew — green gradient, power asymmetry shape -->
             <a href="https://titancrew.online/" target="_blank" rel="noopener noreferrer"
-               class="portal-card" id="mod-titan"
+               class="portal-card" id="mod-titan" draggable="true"
                style="--accent-color: var(--accent-titan);" data-gradient="green">
                 <span class="card-key-badge">5</span>
                 <div class="visited-check"><i class="fas fa-check"></i></div>
@@ -214,8 +214,8 @@
         </div>
     </div>
 
-    <!-- Focus Hours Widget (9–12 AM + 1–2 PM, Mon–Fri) -->
-    <div class="focus-hours-widget" id="focusHoursWidget" title="Remaining focus hours this month (9–12 AM · 1–2 PM · Mon–Fri)">
+    <!-- Focus Hours Widget (9–12 AM + 1–3 PM, Mon–Fri) -->
+    <div class="focus-hours-widget" id="focusHoursWidget" title="Remaining focus hours this month (9–12 AM · 1–3 PM · Mon–Fri)">
         <i class="fa-solid fa-brain fh-icon"></i>
         <div class="fh-body">
             <div class="fh-vals">
@@ -236,13 +236,7 @@
         <span class="lb-fab-label">R</span>
     </button>
 
-    <!-- Quick Links toggle FAB -->
-    <button id="qlToggleBtn" class="ql-toggle-fab" title="Quick Links  [Q]">
-        <i class="fa-solid fa-bolt"></i>
-        <span class="ql-fab-label">Q</span>
-    </button>
-
-    <div class="leaderboard-panel lb-hidden" id="leaderboardPanel">
+<div class="leaderboard-panel lb-hidden" id="leaderboardPanel">
         <div class="lb-header">
             <i class="fa-solid fa-trophy"></i>
             <span>Rankings <span class="lb-period-badge">this month</span></span>
@@ -327,6 +321,29 @@
         </div>
     </div>
 
+    <!-- Command Palette -->
+    <div id="cmdPalette" class="cp-overlay cp-hidden">
+        <div class="cp-container">
+            <div class="cp-search-row">
+                <i class="fa-solid fa-terminal cp-search-icon"></i>
+                <input type="text" id="cpInput" class="cp-input" placeholder="Type a command or search..." autocomplete="off">
+                <div class="cp-esc-badge">ESC</div>
+            </div>
+            <div class="cp-results" id="cpResults"></div>
+            <div class="cp-footer">
+                <div class="cp-hint">
+                    <kbd>↑↓</kbd> <span>Navigate</span>
+                </div>
+                <div class="cp-hint">
+                    <kbd>Enter</kbd> <span>Select</span>
+                </div>
+                <div class="cp-hint">
+                    <kbd>Esc</kbd> <span>Close</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Keyboard Shortcuts Panel -->
     <div class="kb-help-panel kb-hidden" id="kbHelpPanel">
         <div class="kb-header">
@@ -343,14 +360,11 @@
             <div class="kb-row"><kbd>Q</kbd><span>Quick Links</span></div>
             <div class="kb-row"><kbd>H</kbd><span>Top Links</span></div>
             <div class="kb-row"><kbd>/</kbd><span>This panel</span></div>
+            <div class="kb-section-label">Command Palette</div>
+            <div class="kb-row"><span class="kb-keys"><kbd id="cpKeyPlatform">Alt</kbd><kbd id="cpLetterPlatform">K</kbd></span><span>Open Palette</span></div>
             <div class="kb-section-label">Todoist</div>
             <div class="kb-row"><span class="kb-keys"><kbd>Ctrl</kbd><kbd>/</kbd></span><span>Quick add to inbox</span></div>
-            <div class="kb-section-label">Launch</div>
-            <div class="kb-row"><kbd>1</kbd><span>FocusTrack</span></div>
-            <div class="kb-row"><kbd>2</kbd><span>Cali Hustler</span></div>
-            <div class="kb-row"><kbd>3</kbd><span>Nexus Hub</span></div>
-            <div class="kb-row"><kbd>4</kbd><span>Sportage HQ</span></div>
-            <div class="kb-row"><kbd>5</kbd><span>Titan Crew</span></div>
+
         </div>
     </div>
 
@@ -412,18 +426,43 @@
         <i class="fa-solid fa-keyboard"></i>
     </button>
 
-    <!-- USER STATUS BAR (shown when logged in) -->
+    <!-- USER AVATAR (shown when logged in) -->
     <div id="user-bar" class="user-bar hidden">
-      <div class="user-dot"></div>
-      <span id="user-display-name" class="user-name">user</span>
-      <button id="logout-btn" class="user-logout">logout</button>
+      <button class="user-avatar-btn" id="user-avatar-btn" title="Account">
+        <i class="fa-solid fa-circle-user"></i>
+        <span class="user-online-dot"></span>
+      </button>
+      <div class="user-dropdown" id="user-dropdown" hidden>
+        <div class="ud-info">
+          <div class="ud-avatar-icon"><i class="fa-solid fa-circle-user"></i></div>
+          <div class="ud-info-text">
+            <div class="ud-label">Signed in as</div>
+            <span id="user-display-name" class="user-name">user</span>
+          </div>
+        </div>
+        <div class="ud-divider"></div>
+        <button id="logout-btn" class="user-logout">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          Sign out
+        </button>
+      </div>
     </div>
 
     <!-- Supabase JS v2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
+    <!-- SortableJS CDN for smooth drag & drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
     <script src="app.js"></script>
     <script src="supabase-auth.js"></script>
     <script src="todoist.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js');
+            });
+        }
+    </script>
 </body>
 </html>
