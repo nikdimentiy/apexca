@@ -214,6 +214,22 @@
         </div>
     </div>
 
+    <!-- Focus Hours Widget (9–12 AM + 1–2 PM, Mon–Fri) -->
+    <div class="focus-hours-widget" id="focusHoursWidget" title="Remaining focus hours this month (9–12 AM · 1–2 PM · Mon–Fri)">
+        <i class="fa-solid fa-brain fh-icon"></i>
+        <div class="fh-body">
+            <div class="fh-vals">
+                <span id="focusHoursRemaining">—</span><span class="fh-unit">h</span>
+                <span class="fh-sep">/</span>
+                <span id="focusHoursTotal">—</span><span class="fh-unit">h</span>
+            </div>
+            <div class="fh-bar-track">
+                <div class="fh-bar-fill" id="focusHoursBar"></div>
+            </div>
+            <div class="fh-caption">focus hrs left · month</div>
+        </div>
+    </div>
+
     <!-- Rankings toggle FAB -->
     <button id="lbToggleBtn" class="lb-toggle-fab" title="View Rankings  [R]">
         <i class="fa-solid fa-trophy"></i>
@@ -299,22 +315,6 @@
     <button id="kbHelpBtn" class="kb-help-fab" title="Keyboard Shortcuts  [/]">
         <i class="fa-solid fa-keyboard"></i>
     </button>
-
-    <!-- Focus Hours Widget (9–12 AM + 1–2 PM, Mon–Fri) -->
-    <div class="focus-hours-widget" id="focusHoursWidget" title="Remaining focus hours this month (9–12 AM · 1–2 PM · Mon–Fri)">
-        <i class="fa-solid fa-brain fh-icon"></i>
-        <div class="fh-body">
-            <div class="fh-vals">
-                <span id="focusHoursRemaining">—</span><span class="fh-unit">h</span>
-                <span class="fh-sep">/</span>
-                <span id="focusHoursTotal">—</span><span class="fh-unit">h</span>
-            </div>
-            <div class="fh-bar-track">
-                <div class="fh-bar-fill" id="focusHoursBar"></div>
-            </div>
-            <div class="fh-caption">focus hrs left · month</div>
-        </div>
-    </div>
 
     <!-- Working Hours Remaining Widget -->
     <div class="work-hours-widget" id="workHoursWidget" title="Remaining working hours this month (Mon–Fri · 8h/day)">
