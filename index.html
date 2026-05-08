@@ -38,14 +38,15 @@
         </div>
 
         <div class="commands-row">
-            <button id="themeToggleBtn" class="cmd-icon-btn theme-is-light" title="Switch to dark mode">
-                <i id="themeIconMode" class="fa-solid fa-sun"></i>
+            <button id="themeToggleBtn" class="cmd-icon-btn theme-is-light" title="Switch to dark mode" aria-label="Switch to dark mode">
+                <i id="themeIconMode" class="fa-solid fa-sun" aria-hidden="true"></i>
             </button>
-            <button id="wipeAllBtn" class="cmd-icon-btn wipe-action" title="Reset visited marks">
-                <i id="wipeTrashIcon" class="fa-solid fa-broom"></i>
+            <button id="wipeAllBtn" class="cmd-icon-btn wipe-action" title="Reset visited marks" aria-label="Reset visited marks">
+                <i id="wipeTrashIcon" class="fa-solid fa-broom" aria-hidden="true"></i>
             </button>
-            <button id="topLinksBtn" class="cmd-icon-btn top-links-action" title="Top Links  [H]">
-                <i class="fa-solid fa-chart-simple"></i>
+            <button id="topLinksBtn" class="cmd-icon-btn top-links-action" title="Top Links  [H]"
+                    aria-label="Top Links" aria-expanded="false" aria-controls="topLinksPanel">
+                <i class="fa-solid fa-chart-simple" aria-hidden="true"></i>
             </button>
 
         </div>
@@ -58,7 +59,8 @@
                     <div id="widgetWeekday" class="stat-label">DAY</div>
                 </div>
             </div>
-            <div class="stat-widget stat-widget-clickable" id="yearStatWidget" title="Show month calendar">
+            <div class="stat-widget stat-widget-clickable" id="yearStatWidget" title="Show month calendar"
+                 role="button" tabindex="0" aria-expanded="false" aria-controls="monthCalPanel" aria-haspopup="dialog">
                 <div class="stat-icon"><i class="fa-regular fa-leaf"></i></div>
                 <div class="stat-content">
                     <div id="dayOfYearSpan" class="stat-number">0/365</div>
@@ -121,7 +123,7 @@
             </a>
 
             <!-- Titan Crew — green gradient, power asymmetry shape -->
-            <a href="https://titancrew.online/" target="_blank" rel="noopener noreferrer"
+            <a href="https://titancrew.pages.dev/" target="_blank" rel="noopener noreferrer"
                class="portal-card" id="mod-titan" draggable="true"
                style="--accent-color: var(--accent-titan);" data-gradient="green">
                 <span class="card-key-badge">5</span>
@@ -160,14 +162,16 @@
     </div>
 
     <!-- Todoist Today FAB -->
-    <button id="tdToggleBtn" class="td-toggle-fab" title="Today's Tasks  [T]">
-        <i class="fa-solid fa-check-double"></i>
-        <span class="td-fab-label">T</span>
+    <button id="tdToggleBtn" class="td-toggle-fab" title="Today's Tasks  [T]"
+            aria-label="Today's Tasks" aria-expanded="false" aria-controls="todoistPanel">
+        <i class="fa-solid fa-check-double" aria-hidden="true"></i>
+        <span class="td-fab-label" aria-hidden="true">T</span>
         <span class="td-count-badge" id="tdCountBadge" hidden>0</span>
     </button>
 
     <!-- Todoist Today Panel -->
-    <div class="td-panel td-hidden" id="todoistPanel">
+    <div class="td-panel td-hidden" id="todoistPanel"
+         role="complementary" aria-label="Today's Tasks" aria-hidden="true">
         <div class="td-header">
             <i class="fa-solid fa-check-double"></i>
             <span class="td-header-title">Today</span>
@@ -231,17 +235,19 @@
     </div>
 
     <!-- Rankings toggle FAB -->
-    <button id="lbToggleBtn" class="lb-toggle-fab" title="View Rankings  [R]">
-        <i class="fa-solid fa-trophy"></i>
-        <span class="lb-fab-label">R</span>
+    <button id="lbToggleBtn" class="lb-toggle-fab" title="View Rankings  [R]"
+            aria-label="View Rankings" aria-expanded="false" aria-controls="leaderboardPanel">
+        <i class="fa-solid fa-trophy" aria-hidden="true"></i>
+        <span class="lb-fab-label" aria-hidden="true">R</span>
     </button>
 
-<div class="leaderboard-panel lb-hidden" id="leaderboardPanel">
+<div class="leaderboard-panel lb-hidden" id="leaderboardPanel"
+     role="complementary" aria-label="Rankings" aria-hidden="true">
         <div class="lb-header">
-            <i class="fa-solid fa-trophy"></i>
-            <span>Rankings <span class="lb-period-badge">this month</span></span>
-            <button class="lb-close-btn" id="lbCloseBtn" title="Hide Rankings">
-                <i class="fa-solid fa-chevron-left"></i>
+            <i class="fa-solid fa-trophy" aria-hidden="true"></i>
+            <span id="lb-panel-title">Rankings <span class="lb-period-badge">this month</span></span>
+            <button class="lb-close-btn" id="lbCloseBtn" title="Hide Rankings" aria-label="Hide Rankings">
+                <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
             </button>
         </div>
         <table class="leaderboard-table">
@@ -257,12 +263,13 @@
         </table>
     </div>
 
-    <div class="ql-panel ql-hidden" id="quickLinksPanel">
+    <div class="ql-panel ql-hidden" id="quickLinksPanel"
+         role="complementary" aria-label="Quick Links" aria-hidden="true">
         <div class="ql-header">
-            <i class="fa-solid fa-bolt"></i>
-            <span>Quick Links</span>
-            <button class="ql-close-btn" id="qlCloseBtn" title="Hide Quick Links">
-                <i class="fa-solid fa-xmark"></i>
+            <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+            <span id="ql-panel-title">Quick Links</span>
+            <button class="ql-close-btn" id="qlCloseBtn" title="Hide Quick Links" aria-label="Hide Quick Links">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
             </button>
         </div>
         <div class="ql-grid" id="quickLinksGrid">
@@ -271,12 +278,13 @@
     </div>
 
     <!-- Top Links panel — centered overlay, top-5 by visit frequency -->
-    <div class="top-links-panel tl-hidden" id="topLinksPanel">
+    <div class="top-links-panel tl-hidden" id="topLinksPanel"
+         role="dialog" aria-modal="true" aria-labelledby="tl-panel-title" aria-hidden="true">
         <div class="tl-header">
-            <i class="fa-solid fa-chart-simple"></i>
-            <span>Top Links</span>
-            <button class="tl-close-btn" id="tlCloseBtn" title="Close">
-                <i class="fa-solid fa-xmark"></i>
+            <i class="fa-solid fa-chart-simple" aria-hidden="true"></i>
+            <span id="tl-panel-title">Top Links</span>
+            <button class="tl-close-btn" id="tlCloseBtn" title="Close" aria-label="Close Top Links">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
             </button>
         </div>
         <div class="tl-grid" id="topLinksGrid">
@@ -285,11 +293,12 @@
     </div>
 
     <!-- Month Calendar Popup -->
-    <div class="month-cal-panel month-cal-hidden" id="monthCalPanel">
+    <div class="month-cal-panel month-cal-hidden" id="monthCalPanel"
+         role="dialog" aria-modal="true" aria-labelledby="monthCalTitle" aria-hidden="true">
         <div class="month-cal-header">
             <span id="monthCalTitle"></span>
-            <button class="month-cal-close" id="monthCalClose" title="Close">
-                <i class="fa-solid fa-xmark"></i>
+            <button class="month-cal-close" id="monthCalClose" title="Close" aria-label="Close calendar">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
             </button>
         </div>
         <div class="mc-dow-row">
@@ -322,14 +331,16 @@
     </div>
 
     <!-- Command Palette -->
-    <div id="cmdPalette" class="cp-overlay cp-hidden">
+    <div id="cmdPalette" class="cp-overlay cp-hidden"
+         role="dialog" aria-modal="true" aria-label="Command palette" aria-hidden="true">
         <div class="cp-container">
             <div class="cp-search-row">
-                <i class="fa-solid fa-terminal cp-search-icon"></i>
-                <input type="text" id="cpInput" class="cp-input" placeholder="Type a command or search..." autocomplete="off">
-                <div class="cp-esc-badge">ESC</div>
+                <i class="fa-solid fa-terminal cp-search-icon" aria-hidden="true"></i>
+                <input type="text" id="cpInput" class="cp-input" placeholder="Type a command or search..."
+                       autocomplete="off" aria-label="Search commands" aria-autocomplete="list" aria-controls="cpResults">
+                <div class="cp-esc-badge" aria-hidden="true">ESC</div>
             </div>
-            <div class="cp-results" id="cpResults"></div>
+            <div class="cp-results" id="cpResults" role="listbox" aria-label="Command results"></div>
             <div class="cp-footer">
                 <div class="cp-hint">
                     <kbd>↑↓</kbd> <span>Navigate</span>
@@ -345,12 +356,13 @@
     </div>
 
     <!-- Keyboard Shortcuts Panel -->
-    <div class="kb-help-panel kb-hidden" id="kbHelpPanel">
+    <div class="kb-help-panel kb-hidden" id="kbHelpPanel"
+         role="dialog" aria-modal="true" aria-labelledby="kb-panel-title" aria-hidden="true">
         <div class="kb-header">
-            <i class="fa-solid fa-keyboard"></i>
-            <span>Shortcuts</span>
-            <button class="kb-close-btn" id="kbCloseBtn" title="Close">
-                <i class="fa-solid fa-xmark"></i>
+            <i class="fa-solid fa-keyboard" aria-hidden="true"></i>
+            <span id="kb-panel-title">Shortcuts</span>
+            <button class="kb-close-btn" id="kbCloseBtn" title="Close" aria-label="Close shortcuts panel">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
             </button>
         </div>
         <div class="kb-body">
@@ -422,8 +434,9 @@
     </div>
 
     <!-- Keyboard Shortcuts FAB -->
-    <button id="kbHelpBtn" class="kb-help-fab" title="Keyboard Shortcuts  [/]">
-        <i class="fa-solid fa-keyboard"></i>
+    <button id="kbHelpBtn" class="kb-help-fab" title="Keyboard Shortcuts  [/]"
+            aria-label="Keyboard Shortcuts" aria-expanded="false" aria-controls="kbHelpPanel">
+        <i class="fa-solid fa-keyboard" aria-hidden="true"></i>
     </button>
 
     <!-- USER AVATAR (shown when logged in) -->
@@ -441,12 +454,25 @@
           </div>
         </div>
         <div class="ud-divider"></div>
+        <div class="ud-storage">
+            <div class="ud-storage-row">
+                <span class="ud-storage-label">Storage</span>
+                <span class="ud-storage-text" id="udStorageText">—</span>
+            </div>
+            <div class="ud-storage-track">
+                <div class="ud-storage-fill" id="udStorageBar"></div>
+            </div>
+        </div>
+        <div class="ud-divider"></div>
         <button id="logout-btn" class="user-logout">
-          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>
           Sign out
         </button>
       </div>
     </div>
+
+    <!-- Toast notifications -->
+    <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="false"></div>
 
     <!-- Supabase JS v2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>

@@ -704,6 +704,51 @@
   background: rgba(248, 113, 113, 0.07);
 }
 
+/* Storage indicator inside dropdown */
+.ud-storage {
+  padding: 4px 16px 8px;
+}
+
+.ud-storage-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 5px;
+}
+
+.ud-storage-label {
+  font-size: 9px;
+  color: #2d5a3d;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ud-storage-text {
+  font-size: 9px;
+  color: #86efac;
+  font-family: 'Inter', monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+}
+
+.ud-storage-track {
+  height: 3px;
+  background: rgba(74,222,128,0.10);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.ud-storage-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: #22c55e;
+  transition: width 0.4s ease, background 0.3s ease;
+  min-width: 2px;
+}
+
+.ud-storage-fill.warn     { background: #f59e0b; }
+.ud-storage-fill.critical { background: #ef4444; }
+
 /* ── AUTH TRIGGER BUTTON (in header command row) ──────────── */
 .cmd-icon-btn.auth-btn {
   position: relative;

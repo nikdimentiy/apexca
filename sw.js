@@ -1,4 +1,6 @@
-const CACHE = 'portal-shell-v2';
+// Bump VERSION on every deploy — activate handler purges old caches automatically
+const VERSION = '2026-05-08';
+const CACHE = `portal-shell-${VERSION}`;
 
 // Same-origin shell — cache on install, serve cache-first
 const SHELL = [

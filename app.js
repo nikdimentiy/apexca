@@ -1,3 +1,108 @@
+// ---------- FOCUS TRAP UTILITY ----------
+function trapFocus(panel) {
+    const sel = 'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const getFocusable = () => [...panel.querySelectorAll(sel)];
+    panel._trapHandler = (e) => {
+        if (e.key !== 'Tab') return;
+        const focusable = getFocusable();
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last  = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+            if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+            if (document.activeElement === last)  { e.preventDefault(); first.focus(); }
+        }
+    };
+    panel.addEventListener('keydown', panel._trapHandler);
+}
+
+function releaseFocus(panel) {
+    if (panel._trapHandler) {
+        panel.removeEventListener('keydown', panel._trapHandler);
+        panel._trapHandler = null;
+    }
+}
+
+// ---------- LAST-MODIFIED META STORE ----------
+const META_KEY = 'portal_meta';
+
+function _getMeta() {
+    try { return JSON.parse(localStorage.getItem(META_KEY)) || {}; } catch { return {}; }
+}
+function setLastModified(key) {
+    const m = _getMeta(); m[key] = Date.now();
+    localStorage.setItem(META_KEY, JSON.stringify(m));
+}
+function getLastModified(key) { return _getMeta()[key] || 0; }
+
+// ---------- TOAST NOTIFICATIONS ----------
+const _toastContainer = document.getElementById('toast-container');
+
+function showToast(message, type = 'info', duration = 5000) {
+    if (!_toastContainer) return;
+    const t = document.createElement('div');
+    const icon = type === 'warn'  ? 'fa-triangle-exclamation'
+               : type === 'error' ? 'fa-circle-xmark' : 'fa-circle-info';
+    t.className = `toast toast-${type}`;
+    t.innerHTML = `<i class="fa-solid ${icon}" aria-hidden="true"></i><span>${message}</span>`;
+    _toastContainer.appendChild(t);
+    const remove = () => {
+        t.classList.add('toast-hiding');
+        t.addEventListener('animationend', () => t.remove(), { once: true });
+    };
+    const timer = setTimeout(remove, duration);
+    t.addEventListener('click', () => { clearTimeout(timer); remove(); });
+}
+
+// ---------- STORAGE USAGE ----------
+const LS_WARN_BYTES = 4 * 1024 * 1024;
+let _storageWarnShown = false;
+
+function _lsBytes() {
+    let n = 0;
+    for (const k in localStorage) {
+        if (Object.prototype.hasOwnProperty.call(localStorage, k))
+            n += (k.length + (localStorage.getItem(k) || '').length) * 2;
+    }
+    return n;
+}
+
+function _fmtBytes(b) {
+    if (b < 1024)    return `${b} B`;
+    if (b < 1048576) return `${(b / 1024).toFixed(1)} KB`;
+    return `${(b / 1048576).toFixed(2)} MB`;
+}
+
+async function updateStorageIndicator() {
+    const textEl = document.getElementById('udStorageText');
+    const barEl  = document.getElementById('udStorageBar');
+    const lsUsed = _lsBytes();
+    let pct   = Math.min(100, Math.round(lsUsed / (5 * 1048576) * 100));
+    let label = `${_fmtBytes(lsUsed)} / 5 MB`;
+
+    try {
+        const est = await navigator.storage?.estimate?.();
+        if (est?.quota) {
+            pct   = Math.min(100, Math.round((est.usage || 0) / est.quota * 100));
+            label = `${_fmtBytes(est.usage || 0)} / ${_fmtBytes(est.quota)}`;
+        }
+    } catch {}
+
+    if (textEl) textEl.textContent = label;
+    if (barEl) {
+        barEl.style.width = pct + '%';
+        barEl.className = 'ud-storage-fill' + (pct > 80 ? ' critical' : pct > 50 ? ' warn' : '');
+    }
+
+    if (!_storageWarnShown && lsUsed > LS_WARN_BYTES) {
+        _storageWarnShown = true;
+        showToast(`localStorage ${_fmtBytes(lsUsed)} used — approaching 5 MB limit`, 'warn', 8000);
+    }
+}
+
+window.updateStorageIndicator = updateStorageIndicator;
+
 // ---------- THEME TOGGLE ----------
 const themeBtn = document.getElementById('themeToggleBtn');
 const themeIconSpan = document.getElementById('themeIconMode');
@@ -148,6 +253,7 @@ function markAsVisited(id) {
     if (!visitedModules.includes(id)) {
         visitedModules.push(id);
         localStorage.setItem('portal_visited_launchpad', JSON.stringify(visitedModules));
+        setLastModified('portal_visited_launchpad');
         document.getElementById(id)?.classList.add('visited');
         window.savePortalData?.('portal_visited_launchpad', visitedModules);
     }
@@ -220,6 +326,7 @@ function saveMonthlyViewCounts() {
 function incrementView(id) {
     viewCounts[id] = (viewCounts[id] || 0) + 1;
     localStorage.setItem(VIEW_KEY, JSON.stringify(viewCounts));
+    setLastModified(VIEW_KEY);
 
     dailyViewCounts[id] = (dailyViewCounts[id] || 0) + 1;
     saveDailyViewCounts();
@@ -319,6 +426,8 @@ wipeBtn.addEventListener('click', () => {
     wipeIcon.classList.add('spin-wipe');
     localStorage.removeItem('portal_visited_launchpad');
     localStorage.removeItem(VIEW_KEY);
+    setLastModified('portal_visited_launchpad');
+    setLastModified(VIEW_KEY);
     visitedModules = [];
     viewCounts = {};
     dailyViewCounts = {};
@@ -343,6 +452,8 @@ function setLbVisible(show) {
     lbVisible = show;
     lbPanel.classList.toggle('lb-hidden', !show);
     lbToggleBtn.classList.toggle('lb-fab-active', show);
+    lbToggleBtn.setAttribute('aria-expanded', String(show));
+    lbPanel.setAttribute('aria-hidden', String(!show));
     localStorage.setItem('portal_lb_visible', String(show));
 }
 
@@ -390,8 +501,18 @@ function setTlVisible(show) {
     tlVisible = show;
     tlPanel.classList.toggle('tl-hidden', !show);
     topLinksBtn.classList.toggle('tl-btn-active', show);
+    topLinksBtn.setAttribute('aria-expanded', String(show));
+    tlPanel.setAttribute('aria-hidden', String(!show));
     localStorage.setItem('portal_tl_visible', String(show));
-    if (show) renderTopLinksPanel();
+    if (show) {
+        renderTopLinksPanel();
+        trapFocus(tlPanel);
+        const firstFocusable = tlPanel.querySelector('button, a[href]');
+        firstFocusable?.focus();
+    } else {
+        releaseFocus(tlPanel);
+        topLinksBtn.focus();
+    }
 }
 
 setTlVisible(tlVisible);
@@ -407,6 +528,7 @@ let qlVisible = localStorage.getItem('portal_ql_visible') === 'true';
 function setQlVisible(show) {
     qlVisible = show;
     qlPanel.classList.toggle('ql-hidden', !show);
+    qlPanel.setAttribute('aria-hidden', String(!show));
     localStorage.setItem('portal_ql_visible', String(show));
     if (show) renderQuickLinks();
 }
@@ -439,6 +561,7 @@ function saveModuleOrder() {
     const cards = [...gridContainer.querySelectorAll('.portal-card')];
     const order = cards.map(c => c.id);
     localStorage.setItem(MODULE_ORDER_KEY, JSON.stringify(order));
+    setLastModified(MODULE_ORDER_KEY);
     window.savePortalData?.(MODULE_ORDER_KEY, order);
 }
 
@@ -585,8 +708,9 @@ function renderCPResults() {
     if (cpSelectedIndex < 0) cpSelectedIndex = 0;
 
     cpResults.innerHTML = cpFilteredItems.map((item, i) => `
-        <div class="cp-item ${i === cpSelectedIndex ? 'selected' : ''}" data-index="${i}">
-            <div class="cp-item-icon">
+        <div class="cp-item ${i === cpSelectedIndex ? 'selected' : ''}" data-index="${i}"
+             role="option" aria-selected="${i === cpSelectedIndex}">
+            <div class="cp-item-icon" aria-hidden="true">
                 ${item.id === 'ql-google' ? GOOGLE_G_SVG : `<i class="${item.icon}"></i>`}
             </div>
             <div class="cp-item-content">
@@ -604,6 +728,7 @@ function renderCPResults() {
 function setCPVisible(show) {
     cpVisible = show;
     cpOverlay.classList.toggle('cp-hidden', !show);
+    cpOverlay.setAttribute('aria-hidden', String(!show));
     if (show) {
         cpInput.value = '';
         cpSelectedIndex = 0;
@@ -761,10 +886,22 @@ function setMonthCalOpen(open) {
     monthCalOpen = open;
     if (open) { renderMonthCalendar(); positionMonthCal(); }
     monthCalPanel.classList.toggle('month-cal-hidden', !open);
+    monthCalPanel.setAttribute('aria-hidden', String(!open));
     yearStatWidget.classList.toggle('stat-widget-active', open);
+    yearStatWidget.setAttribute('aria-expanded', String(open));
+    if (open) {
+        trapFocus(monthCalPanel);
+        monthCalClose.focus();
+    } else {
+        releaseFocus(monthCalPanel);
+        yearStatWidget.focus();
+    }
 }
 
 yearStatWidget.addEventListener('click', () => setMonthCalOpen(!monthCalOpen));
+yearStatWidget.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setMonthCalOpen(!monthCalOpen); }
+});
 monthCalClose.addEventListener('click', (e) => { e.stopPropagation(); setMonthCalOpen(false); });
 document.addEventListener('click', (e) => {
     if (monthCalOpen && !monthCalPanel.contains(e.target) && !yearStatWidget.contains(e.target))
@@ -782,6 +919,15 @@ function setKbVisible(show) {
     kbVisible = show;
     kbHelpPanel.classList.toggle('kb-hidden', !show);
     kbHelpBtn.classList.toggle('kb-active', show);
+    kbHelpBtn.setAttribute('aria-expanded', String(show));
+    kbHelpPanel.setAttribute('aria-hidden', String(!show));
+    if (show) {
+        trapFocus(kbHelpPanel);
+        kbCloseBtn.focus();
+    } else {
+        releaseFocus(kbHelpPanel);
+        kbHelpBtn.focus();
+    }
 }
 
 kbHelpBtn.addEventListener('click', () => setKbVisible(!kbVisible));
@@ -991,7 +1137,28 @@ window.addEventListener('storage', (e) => {
 // ---------- REALTIME SYNC ----------
 let _syncChannel = null;
 
-function applyCloudRow(key, value) {
+function _getLocalValueForKey(key) {
+    switch (key) {
+        case 'portal_visited_launchpad': return visitedModules;
+        case VIEW_KEY: return viewCounts;
+        case MODULE_ORDER_KEY:
+            try { return JSON.parse(localStorage.getItem(MODULE_ORDER_KEY)); } catch { return null; }
+        default: return null;
+    }
+}
+
+function applyCloudRow(key, value, cloudUpdatedAt) {
+    // Last-write-wins: if local data was modified more recently, push local to cloud and skip
+    if (cloudUpdatedAt) {
+        const localLm  = getLastModified(key);
+        const cloudLm  = new Date(cloudUpdatedAt).getTime();
+        if (localLm > cloudLm) {
+            const localVal = _getLocalValueForKey(key);
+            if (localVal !== null) window.savePortalData?.(key, localVal);
+            return;
+        }
+    }
+
     let parsed;
     try { parsed = JSON.parse(value); } catch { parsed = value; }
 
@@ -1017,10 +1184,12 @@ window.onPortalSyncReady = async function() {
 
     const allData = await window.loadAllPortalData?.();
     if (allData) {
-        if (Array.isArray(allData['portal_visited_launchpad']))
-            applyCloudRow('portal_visited_launchpad', JSON.stringify(allData['portal_visited_launchpad']));
-        if (allData[VIEW_KEY])
-            applyCloudRow(VIEW_KEY, JSON.stringify(allData[VIEW_KEY]));
+        const vl = allData['portal_visited_launchpad'];
+        if (Array.isArray(vl?.value))
+            applyCloudRow('portal_visited_launchpad', JSON.stringify(vl.value), vl.updatedAt);
+        const vc = allData[VIEW_KEY];
+        if (vc?.value && typeof vc.value === 'object' && !Array.isArray(vc.value))
+            applyCloudRow(VIEW_KEY, JSON.stringify(vc.value), vc.updatedAt);
     }
 
     // Subscribe to real-time changes for this user's rows
@@ -1034,7 +1203,8 @@ window.onPortalSyncReady = async function() {
             filter: `user_id=eq.${user.id}`
         }, payload => {
             const row = payload.new;
-            if (row?.key) applyCloudRow(row.key, row.value);
+            // row.value is raw JSON string from Postgres; row.updated_at is ISO timestamp
+            if (row?.key) applyCloudRow(row.key, row.value, row.updated_at);
         })
         .subscribe();
 };

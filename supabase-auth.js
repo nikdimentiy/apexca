@@ -134,6 +134,7 @@ userAvatarBtn?.addEventListener('click', (e) => {
   if (isOpen) { closeDropdown(); } else {
     userDropdown.hidden = false;
     userAvatarBtn.classList.add('active');
+    window.updateStorageIndicator?.();
   }
 });
 
@@ -176,19 +177,22 @@ async function loadPortalData(key) {
   try { return JSON.parse(data.value); } catch { return data.value; }
 }
 
-// Load all portal data for the logged-in user
+// Load all portal data for the logged-in user.
+// Returns { key: { value: <parsed>, updatedAt: <ISO string> } }
 async function loadAllPortalData() {
   const { data: { user } } = await _supa.auth.getUser();
   if (!user) return {};
 
   const { data, error } = await _supa
     .from('portal_data')
-    .select('key, value')
+    .select('key, value, updated_at')
     .eq('user_id', user.id);
 
   if (error || !data) return {};
   return Object.fromEntries(data.map(r => {
-    try { return [r.key, JSON.parse(r.value)]; } catch { return [r.key, r.value]; }
+    let val;
+    try { val = JSON.parse(r.value); } catch { val = r.value; }
+    return [r.key, { value: val, updatedAt: r.updated_at }];
   }));
 }
 
@@ -202,3 +206,5 @@ window.loadAllPortalData = loadAllPortalData;
 
 // Boot
 initAuth();
+// Run storage check once on load (toast only — no dropdown update needed)
+window.addEventListener('load', () => window.updateStorageIndicator?.());
