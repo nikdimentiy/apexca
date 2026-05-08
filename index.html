@@ -336,11 +336,20 @@
             <i class="fa-regular fa-calendar-days wtw-icon"></i>
             <span class="wtw-title">Next 7 Days</span>
             <span class="wtw-count" id="wtwCount"></span>
+            <button class="wtw-mobile-close" id="wtwMobileClose" aria-label="Close next 7 days">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
         </div>
         <div class="wtw-list" id="wtwList">
             <div class="wtw-empty">—</div>
         </div>
     </div>
+
+    <!-- Week Tasks Mobile FAB (mobile only) -->
+    <button id="wtwMobileFab" class="wtw-mobile-fab" title="Next 7 Days" aria-label="Next 7 Days" aria-expanded="false" aria-controls="weekTasksWidget">
+        <i class="fa-regular fa-calendar-days" aria-hidden="true"></i>
+        <span class="wtw-fab-sub" aria-hidden="true">7D</span>
+    </button>
 
     <!-- Command Palette -->
     <div id="cmdPalette" class="cp-overlay cp-hidden"

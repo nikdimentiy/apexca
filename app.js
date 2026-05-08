@@ -963,6 +963,27 @@ function setKbVisible(show) {
 kbHelpBtn.addEventListener('click', () => setKbVisible(!kbVisible));
 kbCloseBtn.addEventListener('click', () => setKbVisible(false));
 
+// ---------- WEEK TASKS MOBILE FAB ----------
+const wtwMobileFab    = document.getElementById('wtwMobileFab');
+const wtwMobileClose  = document.getElementById('wtwMobileClose');
+const weekTasksWidget = document.getElementById('weekTasksWidget');
+
+function setWtwMobileOpen(open) {
+    if (!weekTasksWidget) return;
+    weekTasksWidget.classList.toggle('wtw-mobile-open', open);
+    if (wtwMobileFab) {
+        wtwMobileFab.classList.toggle('wtw-fab-active', open);
+        wtwMobileFab.setAttribute('aria-expanded', String(open));
+    }
+}
+
+if (wtwMobileFab) {
+    wtwMobileFab.addEventListener('click', () => setWtwMobileOpen(!weekTasksWidget.classList.contains('wtw-mobile-open')));
+}
+if (wtwMobileClose) {
+    wtwMobileClose.addEventListener('click', () => setWtwMobileOpen(false));
+}
+
 // ---------- FOCUS HOURS WIDGET (9–12 AM + 1–2 PM, Mon–Fri) ----------
 function calcFocusHours(weekOnly = false) {
     const now = new Date();
