@@ -77,6 +77,33 @@ function esc(s) {
         .replace(/>/g, '&gt;');
 }
 
+// ── Upcoming tasks sidebar widget ───────────────────────
+const utwList  = document.getElementById('utwList');
+const utwCount = document.getElementById('utwCount');
+
+function renderUpcomingWidget() {
+    if (!utwList) return;
+    const pending = tdTasks.filter(t => !tdCompleted.has(t.id));
+    const MAX = 7;
+    if (utwCount) utwCount.textContent = pending.length > 0 ? pending.length : '';
+    if (pending.length === 0) {
+        utwList.innerHTML = '<div class="utw-empty">All clear!</div>';
+        return;
+    }
+    const sorted = [...pending].sort((a, b) => b.priority - a.priority);
+    const shown  = sorted.slice(0, MAX);
+    const extra  = pending.length - shown.length;
+    let html = shown.map(t => {
+        const color = (TD_PRIORITY[t.priority] || TD_PRIORITY[1]).color;
+        return `<div class="utw-task-row">
+            <div class="utw-dot" style="background:${color}"></div>
+            <span class="utw-task-name">${esc(t.content)}</span>
+        </div>`;
+    }).join('');
+    if (extra > 0) html += `<div class="utw-more">+${extra} more</div>`;
+    utwList.innerHTML = html;
+}
+
 // ── Render task list ─────────────────────────────────────────
 function renderTasks() {
     const pending   = tdTasks.filter(t => !tdCompleted.has(t.id));
@@ -102,6 +129,7 @@ function renderTasks() {
                 <i class="fa-solid fa-circle-check"></i>
                 <span>All clear for today!</span>
             </div>`;
+        renderUpcomingWidget();
         return;
     }
 
@@ -139,6 +167,8 @@ function renderTasks() {
     }
 
     tdTaskList.innerHTML = html;
+
+    renderUpcomingWidget();
 
     // Attach checkbox handlers
     tdTaskList.querySelectorAll('.td-checkbox').forEach(btn => {

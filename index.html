@@ -330,6 +330,18 @@
         </div>
     </div>
 
+    <!-- Upcoming Tasks Widget (left-center, desktop only) -->
+    <div class="upcoming-tasks-widget" id="upcomingTasksWidget" aria-label="Upcoming tasks">
+        <div class="utw-header">
+            <i class="fa-solid fa-list-check utw-icon"></i>
+            <span class="utw-title">Upcoming</span>
+            <span class="utw-count" id="utwCount"></span>
+        </div>
+        <div class="utw-list" id="utwList">
+            <div class="utw-empty">—</div>
+        </div>
+    </div>
+
     <!-- Command Palette -->
     <div id="cmdPalette" class="cp-overlay cp-hidden"
          role="dialog" aria-modal="true" aria-label="Command palette" aria-hidden="true">
@@ -367,6 +379,7 @@
         </div>
         <div class="kb-body">
             <div class="kb-section-label">Panels</div>
+            <div class="kb-row"><kbd>D</kbd><span>Toggle dark / light</span></div>
             <div class="kb-row"><kbd>T</kbd><span>Todoist Tasks</span></div>
             <div class="kb-row"><kbd>R</kbd><span>Rankings</span></div>
             <div class="kb-row"><kbd>Q</kbd><span>Quick Links</span></div>

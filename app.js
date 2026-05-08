@@ -849,6 +849,7 @@ document.addEventListener('keydown', e => {
         }
         return;
     }
+    if (e.key.toLowerCase() === 'd') themeBtn.click();
     if (e.key.toLowerCase() === 'r') setLbVisible(!lbVisible);
     if (e.key.toLowerCase() === 'q') setQlVisible(!qlVisible);
     if (e.key.toLowerCase() === 'h') setTlVisible(!tlVisible);
