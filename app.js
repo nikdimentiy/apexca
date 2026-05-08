@@ -103,6 +103,33 @@ async function updateStorageIndicator() {
 
 window.updateStorageIndicator = updateStorageIndicator;
 
+// ---------- DATA EXPORT ----------
+function exportPortalData() {
+    const keys = [
+        'portal_view_counts', 'portal_visited_launchpad',
+        'portal_daily_view_counts', 'portal_monthly_view_counts', 'portal_module_order',
+    ];
+    const out = { _exported: new Date().toISOString() };
+    keys.forEach(k => {
+        const raw = localStorage.getItem(k);
+        try { out[k] = raw ? JSON.parse(raw) : null; } catch { out[k] = raw; }
+    });
+    const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement('a'), {
+        href: url,
+        download: `portal-${new Date().toISOString().slice(0, 10)}.json`,
+    });
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+document.getElementById('export-data-btn')?.addEventListener('click', () => {
+    exportPortalData();
+    const dd = document.getElementById('user-dropdown');
+    if (dd) dd.hidden = true;
+});
+
 // ---------- THEME TOGGLE ----------
 const themeBtn = document.getElementById('themeToggleBtn');
 const themeIconSpan = document.getElementById('themeIconMode');

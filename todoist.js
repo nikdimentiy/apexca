@@ -16,6 +16,7 @@ let tdVisible    = localStorage.getItem('portal_td_visible') === 'true';
 let tdTasks      = [];
 let tdCompleted  = new Set();   // ids completed in this session
 let tdAutoTimer  = null;
+const TD_CACHE_KEY = 'portal_td_cache';
 
 // ── DOM refs ─────────────────────────────────────────────────
 const tdPanel      = document.getElementById('todoistPanel');
@@ -183,11 +184,27 @@ async function loadTodayTasks() {
         const { tasks } = await tdRequest({ action: 'fetch', client_today: localTodayStr() });
         tdTasks = tasks ?? [];
         tdCompleted.clear();
+        try { localStorage.setItem(TD_CACHE_KEY, JSON.stringify({ tasks: tdTasks, saved: Date.now() })); } catch {}
         renderTasks();
     } catch (err) {
-        tdError.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${esc(err.message)}`;
-        tdError.hidden    = false;
-        tdCountBadge.hidden = true;
+        let usedCache = false;
+        try {
+            const cached = JSON.parse(localStorage.getItem(TD_CACHE_KEY) || 'null');
+            if (cached?.tasks?.length) {
+                tdTasks = cached.tasks;
+                tdCompleted.clear();
+                renderTasks();
+                usedCache = true;
+                const age = Math.round((Date.now() - cached.saved) / 60000);
+                tdError.innerHTML = `<i class="fa-solid fa-wifi-slash"></i> Offline — cached ${age}m ago <button class="td-retry-btn">Retry</button>`;
+                tdError.hidden = false;
+            }
+        } catch {}
+        if (!usedCache) {
+            tdError.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${esc(err.message)} <button class="td-retry-btn">Retry</button>`;
+            tdError.hidden    = false;
+            tdCountBadge.hidden = true;
+        }
     } finally {
         tdLoading.hidden      = true;
         tdRefreshBtn.disabled = false;
@@ -220,6 +237,16 @@ setTdVisible(tdVisible);
 tdToggleBtn.addEventListener('click', () => setTdVisible(!tdVisible));
 tdCloseBtn.addEventListener('click',  () => setTdVisible(false));
 tdRefreshBtn.addEventListener('click', loadTodayTasks);
+
+// Retry button inside error message
+tdError.addEventListener('click', e => {
+    if (e.target.closest('.td-retry-btn')) loadTodayTasks();
+});
+
+// Auto-refresh when user returns to the tab
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && tdVisible) loadTodayTasks();
+});
 
 // Esc inside any input within the panel closes the panel
 document.getElementById('tdQuickAddInput')?.addEventListener('keydown', e => {

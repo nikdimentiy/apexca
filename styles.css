@@ -1673,6 +1673,18 @@ body.dark .td-header {
     text-align: center;
     flex-direction: column;
 }
+.td-retry-btn {
+    background: rgba(248, 113, 113, 0.12);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    color: #f87171;
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.72rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.18s;
+}
+.td-retry-btn:hover { background: rgba(248, 113, 113, 0.25); }
 
 /* ── Shimmer skeleton loading ── */
 .td-state.td-loading {
