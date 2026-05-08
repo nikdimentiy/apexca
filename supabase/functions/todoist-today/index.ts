@@ -107,6 +107,43 @@ Deno.serve(async (req: Request) => {
       return json({ tasks })
     }
 
+    if (action === 'fetch_upcoming') {
+      const res = await syncPost(todoistToken, {
+        sync_token: '*',
+        resource_types: ['items'],
+      })
+      if (!res.ok) {
+        const body = await res.text()
+        return json({ error: `Todoist API error ${res.status}: ${body.slice(0, 100)}` }, 502)
+      }
+      const { items = [] } = await res.json()
+      const todayStr = (typeof client_today === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(client_today))
+        ? client_today
+        : new Date().toISOString().slice(0, 10)
+
+      const end = new Date(todayStr + 'T00:00:00')
+      end.setDate(end.getDate() + 6)
+      const endStr = end.toISOString().slice(0, 10)
+
+      const tasks = (items as any[])
+        .filter(t => {
+          if (!t.due?.date) return false
+          const d = t.due.date.slice(0, 10)
+          return !t.checked && !t.is_deleted && /^\d{4}-\d{2}-\d{2}$/.test(d) && d >= todayStr && d <= endStr
+        })
+        .map(({ id, content, priority, due, labels }) => ({
+          id: String(id),
+          content,
+          priority,
+          due,
+          url: `https://app.todoist.com/app/task/${id}`,
+          labels: labels ?? [],
+        }))
+
+      console.log('[todoist-today] returning upcoming tasks:', tasks.length)
+      return json({ tasks })
+    }
+
     if (action === 'close' || action === 'reopen') {
       if (!task_id) return json({ error: 'task_id is required' }, 400)
 

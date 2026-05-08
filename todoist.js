@@ -77,6 +77,78 @@ function esc(s) {
         .replace(/>/g, '&gt;');
 }
 
+// ── Week Tasks Widget (next 7 days) ──────────────────────
+const wtwList  = document.getElementById('wtwList');
+const wtwCount = document.getElementById('wtwCount');
+let weekTasks  = [];
+
+function renderWeekWidget() {
+    if (!wtwList) return;
+    const todayStr    = localTodayStr();
+    const tomorrowD   = new Date();
+    tomorrowD.setDate(tomorrowD.getDate() + 1);
+    const tomorrowStr = `${tomorrowD.getFullYear()}-${String(tomorrowD.getMonth()+1).padStart(2,'0')}-${String(tomorrowD.getDate()).padStart(2,'0')}`;
+
+    if (wtwCount) wtwCount.textContent = weekTasks.length > 0 ? weekTasks.length : '';
+    if (weekTasks.length === 0) {
+        wtwList.innerHTML = '<div class="wtw-empty">All clear!</div>';
+        return;
+    }
+
+    // Group by due date
+    const grouped = {};
+    weekTasks.forEach(t => {
+        const d = t.due?.date?.slice(0, 10);
+        if (!d) return;
+        (grouped[d] = grouped[d] || []).push(t);
+    });
+
+    const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const MAX_PER_DAY = 2;
+
+    let html = '';
+    Object.keys(grouped).sort().forEach(dateStr => {
+        const tasks = [...grouped[dateStr]].sort((a, b) => b.priority - a.priority);
+        const d = new Date(dateStr + 'T00:00:00');
+        let dayLabel;
+        if (dateStr === todayStr)    dayLabel = 'Today';
+        else if (dateStr === tomorrowStr) dayLabel = 'Tomorrow';
+        else dayLabel = `${DAYS[d.getDay()]} ${MONTHS[d.getMonth()]} ${d.getDate()}`;
+
+        const shown = tasks.slice(0, MAX_PER_DAY);
+        const extra = tasks.length - shown.length;
+
+        html += `<div class="wtw-day-group">
+            <div class="wtw-day-header">
+                <span class="wtw-day-label">${esc(dayLabel)}</span>
+                <span class="wtw-day-count">${tasks.length}</span>
+            </div>`;
+        shown.forEach(t => {
+            const color = (TD_PRIORITY[t.priority] || TD_PRIORITY[1]).color;
+            html += `<div class="wtw-task-row">
+                <div class="wtw-dot" style="background:${color}"></div>
+                <span class="wtw-task-name">${esc(t.content)}</span>
+            </div>`;
+        });
+        if (extra > 0) html += `<div class="wtw-more">+${extra} more</div>`;
+        html += '</div>';
+    });
+    wtwList.innerHTML = html;
+}
+
+async function loadWeekTasks() {
+    try {
+        const { data: { session } } = await window.supaAuth.auth.getSession();
+        if (!session) return;
+        const { tasks } = await tdRequest({ action: 'fetch_upcoming', client_today: localTodayStr() });
+        weekTasks = tasks ?? [];
+        renderWeekWidget();
+    } catch (err) {
+        console.error('Week tasks error:', err);
+    }
+}
+
 // ── Upcoming tasks sidebar widget ───────────────────────
 const utwList  = document.getElementById('utwList');
 const utwCount = document.getElementById('utwCount');
@@ -275,7 +347,10 @@ tdError.addEventListener('click', e => {
 
 // Auto-refresh when user returns to the tab
 document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && tdVisible) loadTodayTasks();
+    if (document.visibilityState === 'visible') {
+        if (tdVisible) loadTodayTasks();
+        loadWeekTasks();
+    }
 });
 
 // Esc inside any input within the panel closes the panel
@@ -335,13 +410,18 @@ tdQuickAddForm?.addEventListener('submit', async (e) => {
 // both page reload with existing session and fresh login).
 // INITIAL_SESSION fires on reload; SIGNED_IN fires on fresh login.
 window.supaAuth.auth.onAuthStateChange((event, session) => {
-    if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) loadTodayTasks();
+    if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
+        loadTodayTasks();
+        loadWeekTasks();
+    }
     if (event === 'SIGNED_OUT') {
         tdTasks = [];
+        weekTasks = [];
         tdCompleted.clear();
         clearInterval(tdAutoTimer);
         tdAutoTimer = null;
         tdTaskList.innerHTML = '';
         tdCountBadge.hidden = true;
+        renderWeekWidget();
     }
 });
