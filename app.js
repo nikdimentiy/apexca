@@ -558,6 +558,8 @@ function setQlVisible(show) {
     qlPanel.setAttribute('aria-hidden', String(!show));
     localStorage.setItem('portal_ql_visible', String(show));
     if (show) renderQuickLinks();
+    const weekTasksWidget = document.getElementById('weekTasksWidget');
+    if (weekTasksWidget) weekTasksWidget.classList.toggle('wtw-ql-hidden', show);
 }
 
 setQlVisible(qlVisible);

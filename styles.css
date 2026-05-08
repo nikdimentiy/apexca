@@ -227,8 +227,9 @@ body {
     transform: translateY(-3px);
 }
 .stat-widget-active {
-    border-color: rgba(117, 80, 194, 0.5) !important;
-    background: color-mix(in srgb, var(--accent-nexus) 8%, var(--glass-bg)) !important;
+    border-color: rgba(117, 80, 194, 0.75) !important;
+    background: color-mix(in srgb, var(--accent-nexus) 28%, var(--glass-bg)) !important;
+    box-shadow: 0 0 0 3px rgba(117, 80, 194, 0.18), var(--glass-shadow) !important;
 }
 
 /* Theme button — active state indicates current mode */
@@ -2253,6 +2254,11 @@ body.dark .wh-bar-track {
     pointer-events: none;
     scrollbar-width: thin;
     scrollbar-color: rgba(0,0,0,0.15) transparent;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+.week-tasks-widget.wtw-ql-hidden {
+    opacity: 0;
+    visibility: hidden;
 }
 body.dark .week-tasks-widget {
     background: rgba(8, 16, 36, 0.42);
