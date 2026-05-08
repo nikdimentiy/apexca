@@ -333,8 +333,9 @@ tdQuickAddForm?.addEventListener('submit', async (e) => {
 // ── Auth sync ────────────────────────────────────────────────
 // Load tasks when the user's session is confirmed (handles
 // both page reload with existing session and fresh login).
-window.supaAuth.auth.onAuthStateChange((event) => {
-    if (event === 'SIGNED_IN'  && tdVisible) loadTodayTasks();
+// INITIAL_SESSION fires on reload; SIGNED_IN fires on fresh login.
+window.supaAuth.auth.onAuthStateChange((event, session) => {
+    if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) loadTodayTasks();
     if (event === 'SIGNED_OUT') {
         tdTasks = [];
         tdCompleted.clear();
