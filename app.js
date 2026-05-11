@@ -107,7 +107,7 @@ window.updateStorageIndicator = updateStorageIndicator;
 function exportPortalData() {
     const keys = [
         'portal_view_counts', 'portal_visited_launchpad',
-        'portal_daily_view_counts', 'portal_monthly_view_counts', 'portal_module_order',
+        'portal_daily_view_counts', 'portal_module_order',
     ];
     const out = { _exported: new Date().toISOString() };
     keys.forEach(k => {
@@ -286,7 +286,7 @@ function markAsVisited(id) {
     }
 }
 
-// ---------- VIEW COUNTS & LEADERBOARD ----------
+// ---------- VIEW COUNTS ----------
 const VIEW_KEY = 'portal_view_counts';
 let viewCounts = {};
 
@@ -324,32 +324,6 @@ function saveDailyViewCounts() {
     localStorage.setItem(DAILY_VIEW_KEY, JSON.stringify({ date: getTodayStr(), counts: dailyViewCounts }));
 }
 
-// ---------- MONTHLY VIEW COUNTS (Rankings — resets each month) ----------
-const MONTHLY_VIEW_KEY = 'portal_monthly_view_counts';
-let monthlyViewCounts = {};
-
-function getMonthStr() {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-}
-
-function loadMonthlyViewCounts() {
-    try {
-        const raw = localStorage.getItem(MONTHLY_VIEW_KEY);
-        const data = raw ? JSON.parse(raw) : null;
-        if (data && data.month === getMonthStr()) {
-            monthlyViewCounts = data.counts || {};
-        } else {
-            monthlyViewCounts = {};
-            localStorage.setItem(MONTHLY_VIEW_KEY, JSON.stringify({ month: getMonthStr(), counts: {} }));
-        }
-    } catch(e) { monthlyViewCounts = {}; }
-}
-
-function saveMonthlyViewCounts() {
-    localStorage.setItem(MONTHLY_VIEW_KEY, JSON.stringify({ month: getMonthStr(), counts: monthlyViewCounts }));
-}
-
 function incrementView(id) {
     viewCounts[id] = (viewCounts[id] || 0) + 1;
     localStorage.setItem(VIEW_KEY, JSON.stringify(viewCounts));
@@ -358,45 +332,9 @@ function incrementView(id) {
     dailyViewCounts[id] = (dailyViewCounts[id] || 0) + 1;
     saveDailyViewCounts();
 
-    monthlyViewCounts[id] = (monthlyViewCounts[id] || 0) + 1;
-    saveMonthlyViewCounts();
-
-    renderLeaderboard();
     renderQuickLinks();
     if (tlVisible) renderTopLinksPanel();
     window.savePortalData?.(VIEW_KEY, viewCounts);
-}
-
-const MEDALS = ['🥇', '🥈', '🥉'];
-
-function renderLeaderboard() {
-    const body = document.getElementById('leaderboardBody');
-    if (!body) return;
-    const total = MODULES.reduce((sum, m) => sum + (monthlyViewCounts[m.id] || 0), 0);
-    const sorted = MODULES
-        .map(m => ({ ...m, views: monthlyViewCounts[m.id] || 0 }))
-        .sort((a, b) => b.views - a.views || a.name.localeCompare(b.name));
-
-    body.innerHTML = sorted.map((m, i) => {
-        const pct = total > 0 ? Math.round((m.views / total) * 100) : 0;
-        const medal = i < 3 ? MEDALS[i] : String(i + 1);
-        const topClass = i === 0 ? ' rank-first' : '';
-        return `
-            <tr class="lb-row${topClass}" style="--row-accent: var(${m.accent})">
-                <td class="lb-rank">${medal}</td>
-                <td class="lb-widget">
-                    <span class="lb-icon"><i class="${m.icon}"></i></span>
-                    <span class="lb-name">${m.name}</span>
-                </td>
-                <td class="lb-views">${m.views.toLocaleString()}</td>
-                <td class="lb-bar-cell">
-                    <div class="lb-bar-track">
-                        <div class="lb-bar-fill" style="width:${pct}%"></div>
-                    </div>
-                    <span class="lb-pct">${pct}%</span>
-                </td>
-            </tr>`;
-    }).join('');
 }
 
 const GOOGLE_G_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="google-g-icon" aria-hidden="true">
@@ -458,35 +396,13 @@ wipeBtn.addEventListener('click', () => {
     visitedModules = [];
     viewCounts = {};
     dailyViewCounts = {};
-    monthlyViewCounts = {};
     localStorage.setItem(DAILY_VIEW_KEY, JSON.stringify({ date: getTodayStr(), counts: {} }));
-    localStorage.setItem(MONTHLY_VIEW_KEY, JSON.stringify({ month: getMonthStr(), counts: {} }));
     moduleIds.forEach(id => document.getElementById(id)?.classList.remove('visited'));
-    renderLeaderboard();
     renderQuickLinks();
     window.savePortalData?.('portal_visited_launchpad', []);
     window.savePortalData?.(VIEW_KEY, {});
     setTimeout(() => wipeIcon.classList.remove('spin-wipe'), 450);
 });
-
-// ---------- RANKINGS TOGGLE ----------
-const lbPanel       = document.getElementById('leaderboardPanel');
-const lbToggleBtn   = document.getElementById('lbToggleBtn');
-const lbCloseBtn    = document.getElementById('lbCloseBtn');
-let lbVisible = localStorage.getItem('portal_lb_visible') === 'true';
-
-function setLbVisible(show) {
-    lbVisible = show;
-    lbPanel.classList.toggle('lb-hidden', !show);
-    lbToggleBtn.classList.toggle('lb-fab-active', show);
-    lbToggleBtn.setAttribute('aria-expanded', String(show));
-    lbPanel.setAttribute('aria-hidden', String(!show));
-    localStorage.setItem('portal_lb_visible', String(show));
-}
-
-setLbVisible(lbVisible);
-lbToggleBtn.addEventListener('click', () => setLbVisible(!lbVisible));
-lbCloseBtn.addEventListener('click',  () => setLbVisible(false));
 
 // ---------- TOP LINKS PANEL ----------
 const TL_MEDALS = ['🥇', '🥈', '🥉', '4', '5'];
@@ -496,8 +412,8 @@ function renderTopLinksPanel() {
     if (!grid) return;
 
     const top5 = [...QUICK_LINKS]
-        .map(ql => ({ ...ql, views: dailyViewCounts[ql.id] || 0, totalViews: viewCounts[ql.id] || 0 }))
-        .sort((a, b) => b.views - a.views || b.totalViews - a.totalViews || a.name.localeCompare(b.name))
+        .map(ql => ({ ...ql, views: viewCounts[ql.id] || 0 }))
+        .sort((a, b) => b.views - a.views || a.name.localeCompare(b.name))
         .slice(0, 5);
 
     grid.innerHTML = top5.map((ql, i) => `
@@ -506,7 +422,7 @@ function renderTopLinksPanel() {
             <span class="tl-rank-badge">${TL_MEDALS[i]}</span>
             <div class="tl-icon"><i class="${ql.icon}"></i></div>
             <div class="tl-name">${ql.name}</div>
-            <div class="tl-views">${ql.views} today</div>
+            <div class="tl-views">${ql.views} visits</div>
         </a>
     `).join('');
 
@@ -675,7 +591,6 @@ const COMMANDS = [
     }},
     { id: 'cmd-wipe',  name: 'Reset Statistics', desc: 'Clear visit rankings and history', icon: 'fa-solid fa-broom', type: 'Danger', action: () => wipeBtn.click() },
     { id: 'cmd-kb',    name: 'Keyboard Shortcuts', desc: 'Show all available shortcuts', icon: 'fa-solid fa-keyboard', type: 'Action', action: () => setKbVisible(true) },
-    { id: 'cmd-rank',  name: 'View Rankings', desc: 'Show module visit statistics', icon: 'fa-solid fa-trophy', type: 'Panel', action: () => setLbVisible(true) },
 ];
 
 function getAllCPItems() {
@@ -852,7 +767,6 @@ document.addEventListener('keydown', e => {
         return;
     }
     if (e.key.toLowerCase() === 'd') themeBtn.click();
-    if (e.key.toLowerCase() === 'r') setLbVisible(!lbVisible);
     if (e.key.toLowerCase() === 'q') setQlVisible(!qlVisible);
     if (e.key.toLowerCase() === 'h') setTlVisible(!tlVisible);
     if (e.key === '/') setKbVisible(!kbVisible);
@@ -1159,8 +1073,6 @@ document.getElementById('workHoursWidget')?.addEventListener('click', () => {
 loadVisitedState();
 loadViewCounts();
 loadDailyViewCounts();
-loadMonthlyViewCounts();
-renderLeaderboard();
 renderQuickLinks();
 renderTopLinksPanel();
 updateFocusHoursWidget();
@@ -1178,10 +1090,9 @@ setInterval(() => { updateFocusHoursWidget(); updateWorkHoursWidget(); }, 60000)
 window.addEventListener('storage', (e) => {
     if (e.key === 'portal_visited_launchpad') loadVisitedState();
     if (e.key === 'portal_user_theme') applyTheme(e.newValue === 'dark' ? 'dark' : 'light');
-    if (e.key === VIEW_KEY) { 
-        loadViewCounts(); 
-        renderLeaderboard(); 
-        renderQuickLinks(); 
+    if (e.key === VIEW_KEY) {
+        loadViewCounts();
+        renderQuickLinks();
     }
 });
 
@@ -1222,7 +1133,6 @@ function applyCloudRow(key, value, cloudUpdatedAt) {
     } else if (key === VIEW_KEY && parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
         viewCounts = parsed;
         localStorage.setItem(VIEW_KEY, JSON.stringify(viewCounts));
-        renderLeaderboard();
         renderQuickLinks();
         renderTopLinksPanel();
     }
