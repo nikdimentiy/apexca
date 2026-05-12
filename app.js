@@ -770,6 +770,7 @@ document.addEventListener('keydown', e => {
     if (e.key.toLowerCase() === 'q') setQlVisible(!qlVisible);
     if (e.key.toLowerCase() === 'h') setTlVisible(!tlVisible);
     if (e.key === '/') setKbVisible(!kbVisible);
+    if (e.key === '7') setWtwVisible(!wtwVisible);
 });
 
 
@@ -881,6 +882,17 @@ kbCloseBtn.addEventListener('click', () => setKbVisible(false));
 const wtwMobileFab    = document.getElementById('wtwMobileFab');
 const wtwMobileClose  = document.getElementById('wtwMobileClose');
 const weekTasksWidget = document.getElementById('weekTasksWidget');
+
+let wtwVisible = localStorage.getItem('portal_wtw_visible') === 'true';
+
+function setWtwVisible(show) {
+    if (!weekTasksWidget) return;
+    wtwVisible = show;
+    weekTasksWidget.classList.toggle('wtw-hidden', !show);
+    localStorage.setItem('portal_wtw_visible', String(show));
+}
+
+setWtwVisible(wtwVisible);
 
 function setWtwMobileOpen(open) {
     if (!weekTasksWidget) return;

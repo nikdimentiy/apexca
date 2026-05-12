@@ -2006,7 +2006,8 @@ body.dark .wh-bar-track {
     scrollbar-color: rgba(0,0,0,0.15) transparent;
     transition: opacity 0.2s ease, visibility 0.2s ease;
 }
-.week-tasks-widget.wtw-ql-hidden {
+.week-tasks-widget.wtw-ql-hidden,
+.week-tasks-widget.wtw-hidden {
     opacity: 0;
     visibility: hidden;
 }
